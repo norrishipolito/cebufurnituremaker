@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## MCP Setup
+
+This project uses Context7 MCP for enhanced AI assistance with up-to-date documentation. See [docs/01-mcp-setup.md](./docs/01-mcp-setup.md) for setup instructions.
+
 ## Getting Started
 
 First, run the development server:
