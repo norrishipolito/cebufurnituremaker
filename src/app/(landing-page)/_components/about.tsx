@@ -7,7 +7,7 @@ import { aboutFeatures, showcaseData } from "@/features/home/about/components/ab
 
 export function About() {
   return (
-    <section className="py-12 px-4 sm:py-16 sm:px-6 md:py-20 lg:py-24 lg:px-8 bg-white dark:bg-gray-950">
+    <section id="about" className="py-12 px-4 sm:py-16 sm:px-6 md:py-20 lg:py-24 lg:px-8 bg-white dark:bg-gray-950">
       <div className="mx-auto max-w-7xl">
         <AboutHeader />
         <FeaturesGrid features={aboutFeatures} />

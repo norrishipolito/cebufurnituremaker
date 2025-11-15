@@ -1,4 +1,5 @@
 import { Footer } from "@/common/layouts/footer";
+import { Navigation } from "./_components/navigation";
 
 export default function LandingPageLayout({
   children,
@@ -7,6 +8,7 @@ export default function LandingPageLayout({
 }>) {
   return (
     <div className="flex flex-col">
+      <Navigation />
       {children}
       <Footer />
     </div>
