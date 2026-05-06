@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { CebuFurnitureMakerLogo } from "@/components/logo/cebu-furniture-maker-logo";
 
@@ -17,14 +17,7 @@ import { CebuFurnitureMakerLogo } from "@/components/logo/cebu-furniture-maker-l
  */
 export function FooterBrand() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (isInView && !hasAnimated) {
-      setHasAnimated(true);
-    }
-  }, [isInView, hasAnimated]);
+  const hasAnimated = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <motion.div

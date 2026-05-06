@@ -27,7 +27,7 @@ export function TestimonialsHeader() {
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        Don't just take our word for it. Here's what our satisfied customers have to say about our handcrafted furniture.
+        Don&apos;t just take our word for it. Here&apos;s what our satisfied customers have to say about our handcrafted furniture.
       </motion.p>
     </motion.div>
   );

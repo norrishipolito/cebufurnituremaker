@@ -405,9 +405,7 @@ export function CebuFurnitureMakerLogo({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 2 }}
-      >
-        &ldquo;Your home deserve&apos;s the best&rdquo;
-      </motion.text>
+      >{`"Your home deserve's the best"`}</motion.text>
     </svg>
   );
 }

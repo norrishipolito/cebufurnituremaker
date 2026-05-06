@@ -27,7 +27,7 @@ export function ContactHeader() {
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        Have a project in mind? Let's discuss how we can bring your furniture vision to life.
+        Have a project in mind? Let&apos;s discuss how we can bring your furniture vision to life.
       </motion.p>
     </motion.div>
   );

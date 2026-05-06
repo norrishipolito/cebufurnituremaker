@@ -1,40 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cebu Furniture Maker
 
-## MCP Setup
+A Next.js landing page for Cebu Furniture Maker, built with React, TypeScript, Tailwind CSS, and pnpm.
 
-This project uses Context7 MCP for enhanced AI assistance with up-to-date documentation. See [docs/01-mcp-setup.md](./docs/01-mcp-setup.md) for setup instructions.
+## Requirements
 
-## Getting Started
+Install these before running the project:
 
-First, run the development server:
+- [Node.js](https://nodejs.org/) `20.9.0` or newer
+- [pnpm](https://pnpm.io/)
+
+If you already have Node.js installed, you can enable pnpm through Corepack:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+corepack enable
+corepack prepare pnpm@latest --activate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Check your installed versions:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+node -v
+pnpm -v
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+Install dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Run Locally
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Start the development server:
 
-## Deploy on Vercel
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The main landing page is in `src/app/(landing-page)/page.tsx`.
+
+## Available Scripts
+
+```bash
+pnpm dev
+```
+
+Runs the app in development mode.
+
+```bash
+pnpm build
+```
+
+Builds the production app.
+
+```bash
+pnpm start
+```
+
+Runs the production build. Run `pnpm build` first.
+
+```bash
+pnpm lint
+```
+
+Runs ESLint.
+
+## Project Structure
+
+- `src/app` - Next.js app routes, layouts, and global styles
+- `src/features` - page feature sections such as hero, projects, about, testimonials, contact, and navigation
+- `src/components` - shared UI and logo components
+- `src/common` - shared layouts
+- `public` - static assets
+- `docs` - project architecture and feature notes

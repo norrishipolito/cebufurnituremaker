@@ -52,7 +52,7 @@ export function HeroLogo({ hasScrolledDown = false }: HeroLogoProps) {
     <motion.div
       layoutId="logo"
       className="absolute inset-x-0 top-16 z-[50] sm:top-20 md:top-20 lg:top-24 xl:top-24"
-      style={{ opacity }}
+      style={{ opacity: opacitySpring }}
       initial={hasScrolledDown ? false : { opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={

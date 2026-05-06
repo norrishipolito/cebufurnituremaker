@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Github, Twitter, Facebook, Instagram } from "lucide-react";
+import { Camera, Code2, MessageCircle, Send } from "lucide-react";
 
 interface SocialLink {
   icon: React.ComponentType<{ className?: string }>;
@@ -11,22 +11,22 @@ interface SocialLink {
 
 const socialLinks: SocialLink[] = [
   {
-    icon: Facebook,
+    icon: MessageCircle,
     href: "https://facebook.com/cebufurnituremaker",
     label: "Facebook",
   },
   {
-    icon: Instagram,
+    icon: Camera,
     href: "https://instagram.com/cebufurnituremaker",
     label: "Instagram",
   },
   {
-    icon: Twitter,
+    icon: Send,
     href: "https://twitter.com/cebufurnituremaker",
     label: "Twitter",
   },
   {
-    icon: Github,
+    icon: Code2,
     href: "https://github.com/cebufurnituremaker",
     label: "GitHub",
   },
