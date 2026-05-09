@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import type { AdminProfile } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";
 import { AdminSignOutButton } from "./admin-sign-out-button";
+import { AdminThemeToggle } from "./admin-theme-toggle";
 
 export function AdminHeader({ profile }: { profile: AdminProfile | null }) {
   return (
@@ -14,6 +15,7 @@ export function AdminHeader({ profile }: { profile: AdminProfile | null }) {
         </p>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
+        <AdminThemeToggle />
         <Button asChild variant="outline" size="sm">
           <Link href="/">
             View Site

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { defaultSiteContent } from "@/lib/default-site-content";
 import type { SiteSectionKey } from "@/lib/default-site-content";
 
@@ -74,12 +76,14 @@ function normalizeObject<T>(value: unknown, fallback: T): T {
 function Field({
   label,
   children,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium">
+    <label className={cn("grid gap-1.5 text-sm font-medium", className)}>
       <span>{label}</span>
       {children}
     </label>
@@ -122,6 +126,8 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   const [isSaving, setIsSaving] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const contentId = `content-section-${title.toLowerCase()}`;
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -134,29 +140,45 @@ function SectionCard({
   }
 
   return (
-    <section className="rounded-lg border bg-white p-4 dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">{title}</h2>
+    <section className="rounded-lg border bg-white dark:border-gray-800 dark:bg-gray-900">
+      <div className="flex items-center justify-between gap-4 p-4">
+        <button
+          type="button"
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
+          onClick={() => setIsExpanded((current) => !current)}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 transition-transform",
+              !isExpanded && "-rotate-90"
+            )}
+          />
+          <h2 className="truncate text-lg font-semibold">{title}</h2>
+        </button>
         <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
           {source}
         </span>
       </div>
-      <form onSubmit={submit} className="space-y-4">
-        {children}
-        <div className="flex items-center gap-3 border-t pt-4">
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? "Saving..." : `Save ${title.toLowerCase()}`}
-          </Button>
-          {status ? (
-            <p
-              data-testid={`content-editor-${title.toLowerCase()}-status`}
-              className="text-sm text-gray-600 dark:text-gray-400"
-            >
-              {status}
-            </p>
-          ) : null}
-        </div>
-      </form>
+      {isExpanded ? (
+        <form id={contentId} onSubmit={submit} className="space-y-4 px-4 pb-4">
+          {children}
+          <div className="flex items-center gap-3 border-t pt-4 dark:border-gray-800">
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? "Saving..." : `Save ${title.toLowerCase()}`}
+            </Button>
+            {status ? (
+              <p
+                data-testid={`content-editor-${title.toLowerCase()}-status`}
+                className="text-sm text-gray-600 dark:text-gray-400"
+              >
+                {status}
+              </p>
+            ) : null}
+          </div>
+        </form>
+      ) : null}
     </section>
   );
 }
@@ -373,7 +395,7 @@ export function ContentSectionEditor({
             }
           />
         </Field>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <Field label="Showcase title">
             <Input
               value={about.showcase.title}
@@ -398,7 +420,7 @@ export function ContentSectionEditor({
               }
             />
           </Field>
-          <Field label="Showcase description">
+          <Field label="Showcase description" className="md:col-span-2">
             <Textarea
               value={about.showcase.description}
               placeholder="Showcase description (ex. A short paragraph about the workshop.)"

@@ -21,3 +21,32 @@ test("signed-in admin can sign out from the admin header", async ({ page }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/login/);
 });
+
+test("signed-in admin can toggle dark mode", async ({ page }) => {
+  await page.goto("/admin/login");
+  await page.evaluate(() => {
+    window.localStorage.setItem("admin-theme", "light");
+  });
+  await loginAsAdmin(page);
+
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(
+    page.getByRole("button", { name: "Switch to light mode" })
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.querySelector('[data-testid="admin-theme-root"]')?.parentElement
+          ?.classList.contains("dark")
+      )
+    )
+    .toBe(true);
+
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Switch to light mode" })
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await expect(page.getByRole("button", { name: "Switch to dark mode" })).toBeVisible();
+});

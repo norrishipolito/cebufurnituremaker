@@ -78,6 +78,8 @@ If a feature is documentation-only, tests are not required, but the doc change s
 - Labels should describe the actual editable field, such as `Hero heading` or `Contact email`.
 - Inputs should include example placeholders where helpful, such as `Category (ex. Dining Room)`.
 - Admin pages should support the expected workflows: edit content, create/update projects, manage testimonials, review/update/delete media, and manage users according to role.
+- Admin content sections should be expandable/collapsible and collapsed by default so editors can focus on one area without losing quick access to the rest.
+- Admin UI must support dark mode through an editor-facing toggle and should persist the selected admin theme locally.
 - Landing navigation is fixed site structure. Do not expose navigation links in the admin content editor or editable content API unless a future feature explicitly reopens that scope.
 - CRUD-backed admin resources must expose the full workflow in the UI, including create, edit, delete, publish/unpublish where relevant, and any required attachment controls.
 - Project images must be attachable from the project create/edit UI through an upload field plus alt text.

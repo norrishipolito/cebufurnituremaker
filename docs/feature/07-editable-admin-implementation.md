@@ -45,9 +45,13 @@ src/
 |   |   |-- users/
 |   |   |   `-- page.tsx
 |   |   `-- _components/
+|   |       |-- admin-chrome.tsx
 |   |       |-- admin-header.tsx
 |   |       |-- admin-page-shell.tsx
-|   |       `-- admin-sidebar.tsx
+|   |       |-- admin-sidebar.tsx
+|   |       |-- admin-sign-out-button.tsx
+|   |       |-- admin-theme-provider.tsx
+|   |       `-- admin-theme-toggle.tsx
 |   `-- api/
 |       |-- admin/
 |       |   |-- me/
@@ -417,6 +421,9 @@ Content editor field expectations:
 - Contact: title, description, email, phone, and address.
 - Footer: brand description and editable footer columns/links.
 - Navigation is fixed site structure and should not be exposed in the admin content editor or editable content API.
+- Content sections are expandable/collapsible and should be collapsed by default when the editor page loads.
+- The About showcase description should appear below the showcase title and showcase image URL fields.
+- The admin header includes a dark mode toggle for authenticated users, and the chosen admin theme is persisted in local storage.
 
 Save actions call the matching section endpoint and should revalidate the public homepage so changes appear after saving.
 

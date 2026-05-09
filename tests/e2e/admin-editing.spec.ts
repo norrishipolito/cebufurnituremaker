@@ -5,6 +5,14 @@ import {
   saveContentSection,
 } from "./admin-helpers";
 
+async function expandContentSection(page: import("@playwright/test").Page, name: string) {
+  const toggle = page.getByRole("button", { name, exact: true });
+
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+}
+
 test.describe.serial("authenticated admin editing", () => {
   test.skip(
     ({ isMobile }) => isMobile,
@@ -25,6 +33,7 @@ test.describe.serial("authenticated admin editing", () => {
     };
 
     try {
+      await expandContentSection(page, "Hero");
       await page.getByLabel("Hero heading").fill(updatedHero.heading);
       await page.getByLabel("Emphasized heading text").fill("");
       await page.getByLabel("Hero tagline").fill(updatedHero.tagline);
@@ -70,6 +79,7 @@ test.describe.serial("authenticated admin editing", () => {
       brand: `Admin footer brand ${unique}`,
     };
     try {
+      await expandContentSection(page, "About");
       await page.getByLabel("About title").fill(updatedAbout.title);
       await page.getByLabel("About description").fill(updatedAbout.description);
       await page.getByRole("button", { name: /save about/i }).click();
@@ -77,6 +87,7 @@ test.describe.serial("authenticated admin editing", () => {
         /saved/i
       );
 
+      await expandContentSection(page, "Contact");
       await page.getByLabel("Contact title").fill(updatedContact.title);
       await page.getByLabel("Contact email").fill(updatedContact.email);
       await page.getByRole("button", { name: /save contact/i }).click();
@@ -84,6 +95,7 @@ test.describe.serial("authenticated admin editing", () => {
         /saved/i
       );
 
+      await expandContentSection(page, "Footer");
       await page.getByLabel("Footer brand description").fill(updatedFooter.brand);
       await page.getByRole("button", { name: /save footer/i }).click();
       await expect(page.getByTestId("content-editor-footer-status")).toHaveText(
@@ -108,6 +120,9 @@ test.describe.serial("authenticated admin editing", () => {
     await loginAsAdmin(page);
     await page.goto("/admin/content");
 
+    await expandContentSection(page, "Hero");
+    await expandContentSection(page, "Contact");
+    await expandContentSection(page, "Footer");
     await expect(page.getByLabel("Hero heading")).toBeVisible();
     await expect(page.getByLabel("Contact email")).toBeVisible();
     await expect(page.getByLabel("Footer brand description")).toBeVisible();
@@ -119,5 +134,37 @@ test.describe.serial("authenticated admin editing", () => {
     });
     expect(navigationPatch.status()).toBe(400);
     await expect(page.getByTestId("content-editor-hero")).toHaveCount(0);
+  });
+
+  test("content editor sections expand and keep showcase description below the showcase title and image", async ({
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    await page.goto("/admin/content");
+
+    const aboutToggle = page.getByRole("button", { name: "About", exact: true });
+    await expect(aboutToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByLabel("About title")).toHaveCount(0);
+
+    await aboutToggle.click();
+    await expect(aboutToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByLabel("Showcase description")).toBeVisible();
+
+    const titleBox = await page.getByLabel("Showcase title").boundingBox();
+    const imageBox = await page.getByLabel("Showcase image URL").boundingBox();
+    const descriptionBox = await page
+      .getByLabel("Showcase description")
+      .boundingBox();
+
+    expect(titleBox).not.toBeNull();
+    expect(imageBox).not.toBeNull();
+    expect(descriptionBox).not.toBeNull();
+    expect(descriptionBox!.y).toBeGreaterThan(
+      Math.max(titleBox!.y, imageBox!.y)
+    );
+
+    await aboutToggle.click();
+    await expect(aboutToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByLabel("About title")).toHaveCount(0);
   });
 });
