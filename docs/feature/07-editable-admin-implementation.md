@@ -419,7 +419,7 @@ Content editor field expectations:
 - Hero: heading, emphasized heading, tagline, background image URL, background alt text, and editable footer feature rows.
 - About: title, description, showcase title, showcase image URL, showcase image alt text, and showcase description.
 - Contact: title, description, email, phone, and address.
-- Footer: brand description and editable footer columns/links.
+- Footer: brand description, editable Facebook/Instagram/Twitter social URLs, and editable footer columns/links.
 - Navigation is fixed site structure and should not be exposed in the admin content editor or editable content API.
 - Content sections are expandable/collapsible and should be collapsed by default when the editor page loads.
 - The About showcase description should appear below the showcase title and showcase image URL fields.

@@ -47,6 +47,10 @@ interface ContactContent {
 
 interface FooterContent {
   brand: string;
+  socialLinks: Array<{
+    label: string;
+    href: string;
+  }>;
   columns: Array<{
     title: string;
     links: Array<{
@@ -71,6 +75,26 @@ function normalizeObject<T>(value: unknown, fallback: T): T {
   }
 
   return { ...clone(fallback), ...(value as Partial<T>) };
+}
+
+function updateSocialLink(
+  links: FooterContent["socialLinks"],
+  label: string,
+  href: string
+) {
+  const hasExistingLink = links.some(
+    (link) => link.label.toLowerCase() === label.toLowerCase()
+  );
+
+  if (!hasExistingLink) {
+    return [...links, { label, href }];
+  }
+
+  return links.map((link) =>
+    link.label.toLowerCase() === label.toLowerCase()
+      ? { ...link, href }
+      : link
+  );
 }
 
 function Field({
@@ -510,6 +534,36 @@ export function ContentSectionEditor({
             }
           />
         </Field>
+        <div className="space-y-3 rounded-md border p-3 dark:border-gray-800">
+          <h3 className="text-sm font-semibold">Footer social links</h3>
+          <div className="grid gap-3 md:grid-cols-3">
+            {["Facebook", "Instagram", "Twitter"].map((label) => {
+              const link =
+                footer.socialLinks.find(
+                  (item) => item.label.toLowerCase() === label.toLowerCase()
+                ) ?? { label, href: "" };
+
+              return (
+                <Field key={label} label={`${label} URL`}>
+                  <Input
+                    value={link.href}
+                    placeholder={`${label} URL (ex. https://${label.toLowerCase()}.com/cebufurnituremaker)`}
+                    onChange={(event) =>
+                      setFooter((current) => ({
+                        ...current,
+                        socialLinks: updateSocialLink(
+                          current.socialLinks,
+                          label,
+                          event.target.value
+                        ),
+                      }))
+                    }
+                  />
+                </Field>
+              );
+            })}
+          </div>
+        </div>
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold">Footer columns</h3>

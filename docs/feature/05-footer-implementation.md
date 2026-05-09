@@ -145,7 +145,7 @@ interface FooterColumnProps {
 **Purpose**: Displays social media links with icons.
 
 **Features**:
-- Four social media icons (Facebook, Instagram, Twitter, GitHub)
+- Three social media icons (Facebook, Instagram, Twitter)
 - Icon hover effects
 - Animated entrance
 - Accessibility labels
@@ -154,7 +154,6 @@ interface FooterColumnProps {
 - Facebook
 - Instagram
 - Twitter
-- GitHub
 
 **Icons**:
 - All icons from `lucide-react`
@@ -275,7 +274,6 @@ All icons are from `lucide-react`:
 - `Facebook` - Facebook social link
 - `Instagram` - Instagram social link
 - `Twitter` - Twitter social link
-- `Github` - GitHub social link
 
 ### Animations
 
@@ -363,20 +361,15 @@ Edit `footer-brand.tsx`:
 </p>
 ```
 
-#### Adding/Removing Social Links
+#### Editing Social Links
 
-Edit `footer-social.tsx`:
+Edit the Footer section in `/admin/content`:
 
-```tsx
-const socialLinks: SocialLink[] = [
-  // ... existing links
-  {
-    icon: Linkedin,
-    href: "https://linkedin.com/company/cebufurnituremaker",
-    label: "LinkedIn",
-  },
-];
-```
+- Facebook URL
+- Instagram URL
+- Twitter URL
+
+The public footer intentionally supports those three platforms only. GitHub should not appear unless a future feature explicitly expands the supported platform list.
 
 #### Modifying Bottom Links
 
@@ -437,14 +430,14 @@ export interface FooterColumnData {
 ## Dependencies
 
 - **framer-motion**: For animations and scroll-triggered effects
-- **lucide-react**: For icons (Facebook, Instagram, Twitter, Github)
+- **Inline brand SVGs**: For Facebook, Instagram, and Twitter icons.
 - **tailwindcss**: For styling and responsive design
 
 ## Performance Considerations
 
 1. **Animations**: Only trigger once when scrolled into view
 2. **Component Splitting**: Sub-components allow for code splitting
-3. **Static Content**: Footer content is static (no API calls)
+3. **Editable Content**: Footer content is read through the editable content helpers and falls back to local defaults when the database is empty.
 4. **Optimized Rendering**: Uses React key props for list rendering
 
 ## Responsive Behavior

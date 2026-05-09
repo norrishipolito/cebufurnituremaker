@@ -78,6 +78,8 @@ test.describe.serial("authenticated admin editing", () => {
       ...originalFooter,
       brand: `Admin footer brand ${unique}`,
     };
+    const facebookUrl = `https://facebook.com/e2e-cebu-${unique}`;
+
     try {
       await expandContentSection(page, "About");
       await page.getByLabel("About title").fill(updatedAbout.title);
@@ -97,6 +99,7 @@ test.describe.serial("authenticated admin editing", () => {
 
       await expandContentSection(page, "Footer");
       await page.getByLabel("Footer brand description").fill(updatedFooter.brand);
+      await page.getByLabel("Facebook URL").fill(facebookUrl);
       await page.getByRole("button", { name: /save footer/i }).click();
       await expect(page.getByTestId("content-editor-footer-status")).toHaveText(
         /saved/i
@@ -108,6 +111,11 @@ test.describe.serial("authenticated admin editing", () => {
       ).toBeVisible();
       await expect(page.getByText(updatedContact.email)).toBeVisible();
       await expect(page.getByText(updatedFooter.brand)).toBeVisible();
+      await expect(page.getByRole("link", { name: "Facebook" })).toHaveAttribute(
+        "href",
+        facebookUrl
+      );
+      await expect(page.getByRole("link", { name: "GitHub" })).toHaveCount(0);
     } finally {
       await page.goto("/admin/content");
       await saveContentSection(page, "about", originalAbout);
@@ -126,6 +134,9 @@ test.describe.serial("authenticated admin editing", () => {
     await expect(page.getByLabel("Hero heading")).toBeVisible();
     await expect(page.getByLabel("Contact email")).toBeVisible();
     await expect(page.getByLabel("Footer brand description")).toBeVisible();
+    await expect(page.getByLabel("Facebook URL")).toBeVisible();
+    await expect(page.getByLabel("Instagram URL")).toBeVisible();
+    await expect(page.getByLabel("Twitter URL")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Navigation" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /save navigation/i })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /add navigation item/i })).toHaveCount(0);

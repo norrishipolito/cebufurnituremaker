@@ -7,6 +7,10 @@ import { getSiteSection } from "@/lib/site-content/queries";
 
 interface FooterContent {
   brand: string;
+  socialLinks: Array<{
+    label: string;
+    href: string;
+  }>;
   columns: Array<{
     title: string;
     links: Array<{
@@ -20,6 +24,7 @@ function asFooterContent(content: unknown): FooterContent {
   const fallback = defaultSiteContent.footer;
   const fallbackContent = {
     brand: fallback.brand,
+    socialLinks: fallback.socialLinks.map((link) => ({ ...link })),
     columns: fallback.columns.map((column) => ({
       title: column.title,
       links: [...column.links],
@@ -31,6 +36,15 @@ function asFooterContent(content: unknown): FooterContent {
   }
 
   const source = content as Partial<FooterContent>;
+  const socialLinks = Array.isArray(source.socialLinks)
+    ? source.socialLinks
+        .filter((link) => link && typeof link === "object")
+        .map((link) => ({
+          label: typeof link.label === "string" ? link.label : "",
+          href: typeof link.href === "string" ? link.href : "",
+        }))
+        .filter((link) => link.label && link.href)
+    : fallbackContent.socialLinks;
   const columns = Array.isArray(source.columns)
     ? source.columns
         .filter((column) => column && typeof column === "object")
@@ -51,6 +65,7 @@ function asFooterContent(content: unknown): FooterContent {
 
   return {
     brand: typeof source.brand === "string" ? source.brand : fallbackContent.brand,
+    socialLinks,
     columns,
   };
 }
@@ -65,7 +80,7 @@ export async function Footer() {
         <div className="grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
             <FooterBrand description={footer.brand} />
-            <FooterSocial />
+            <FooterSocial links={footer.socialLinks} />
           </div>
           {footer.columns.map((column, index) => (
             <FooterColumn

@@ -222,6 +222,20 @@ export const defaultSiteContent = {
   footer: {
     brand:
       "Handcrafted furniture designed and built in Cebu, Philippines. Creating timeless pieces for modern living.",
+    socialLinks: [
+      {
+        label: "Facebook",
+        href: "https://facebook.com/cebufurnituremaker",
+      },
+      {
+        label: "Instagram",
+        href: "https://instagram.com/cebufurnituremaker",
+      },
+      {
+        label: "Twitter",
+        href: "https://twitter.com/cebufurnituremaker",
+      },
+    ],
     columns: [
       {
         title: "Product",
