@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { NavigationItemComponent } from "./navigation-item";
 import { navigationItems } from "./navigation-data";
+import type { NavigationItem } from "./navigation-data";
 import { cn } from "@/lib/utils";
 
 interface NavigationItemsProps {
@@ -11,6 +12,7 @@ interface NavigationItemsProps {
   onItemClick?: () => void;
   /** Whether user has scrolled past hero section */
   isScrolled?: boolean;
+  items?: NavigationItem[];
 }
 
 /**
@@ -28,12 +30,13 @@ export function NavigationItems({
   className,
   onItemClick,
   isScrolled = false,
+  items = navigationItems,
 }: NavigationItemsProps) {
   const [activeSection, setActiveSection] = useState<string>("hero");
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = navigationItems.map((item) => item.id);
+      const sections = items.map((item) => item.id);
       const scrollPosition = window.scrollY + 100; // Offset for sticky nav
 
       // Find the current section by checking from bottom to top
@@ -50,11 +53,11 @@ export function NavigationItems({
     handleScroll(); // Check on mount
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [items]);
 
   return (
     <ul className={cn("flex items-center gap-0.5 sm:gap-1", className)}>
-      {navigationItems.map((item) => (
+      {items.map((item) => (
         <NavigationItemComponent
           key={item.id}
           {...item}

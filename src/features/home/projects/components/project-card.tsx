@@ -21,19 +21,25 @@ export function ProjectCard({
   return (
     <motion.div
       className="group relative overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ y: 20 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            No image
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <span className="inline-block px-3 py-1 text-xs font-semibold text-white bg-black/50 backdrop-blur-sm rounded-full">

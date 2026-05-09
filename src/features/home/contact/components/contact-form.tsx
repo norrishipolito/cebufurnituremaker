@@ -21,11 +21,39 @@ export function ContactForm() {
     inquiry: "",
     message: "",
   });
+  const [status, setStatus] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
+    setIsSubmitting(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json();
+        throw new Error(payload.error ?? "Unable to send message.");
+      }
+
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        inquiry: "",
+        message: "",
+      });
+      setStatus("Message sent.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to send message.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -36,8 +64,8 @@ export function ContactForm() {
     <motion.form
       onSubmit={handleSubmit}
       className="space-y-4"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ y: 20 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: 0.3 }}
     >
@@ -97,8 +125,11 @@ export function ContactForm() {
           className="h-11"
         />
       </div>
-      <Button type="submit" size="lg" className="w-full">
-        Send Message
+      {status ? (
+        <p className="text-sm text-gray-600 dark:text-gray-400">{status}</p>
+      ) : null}
+      <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Sending..." : "Send Message"}
         <Send className="ml-2 h-4 w-4" />
       </Button>
     </motion.form>

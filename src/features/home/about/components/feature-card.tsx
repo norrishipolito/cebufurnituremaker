@@ -13,8 +13,8 @@ export function FeatureCard({ icon: Icon, title, description, index }: FeatureCa
   return (
     <motion.div
       className="relative rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm hover:shadow-md transition-shadow"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ y: 20 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >

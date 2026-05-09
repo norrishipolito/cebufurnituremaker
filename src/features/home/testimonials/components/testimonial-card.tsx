@@ -31,13 +31,19 @@ export function TestimonialCard({
       </blockquote>
       <div className="flex flex-row items-center gap-2 sm:gap-3 mt-auto">
         <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden flex-shrink-0">
-          <Image
-            src={img}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 40px, 48px"
-          />
+          {img ? (
+            <Image
+              src={img}
+              alt={name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 40px, 48px"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-200 text-xs font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+              {name.slice(0, 1).toUpperCase()}
+            </div>
+          )}
         </div>
         <div className="flex flex-col">
           <figcaption className="text-xs sm:text-sm font-semibold dark:text-white">

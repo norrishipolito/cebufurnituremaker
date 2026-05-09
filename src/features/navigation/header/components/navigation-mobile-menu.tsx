@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { NavigationItems } from "./navigation-items";
 import { CebuFurnitureMakerLogo } from "@/components/logo/cebu-furniture-maker-logo";
+import type { NavigationItem } from "./navigation-data";
 import { cn } from "@/lib/utils";
 
 interface NavigationMobileMenuProps {
   className?: string;
   /** Whether user has scrolled past hero section */
   isScrolled?: boolean;
+  items: NavigationItem[];
 }
 
 /**
@@ -28,6 +30,7 @@ interface NavigationMobileMenuProps {
 export function NavigationMobileMenu({
   className,
   isScrolled = false,
+  items,
 }: NavigationMobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -135,6 +138,7 @@ export function NavigationMobileMenu({
                 onItemClick={closeMenu}
                 className="flex-col items-stretch gap-0.5"
                 isScrolled={true}
+                items={items}
               />
             </div>
           </motion.nav>

@@ -14,8 +14,8 @@ function ContactInfoItem({ icon: Icon, title, value, delay }: ContactInfoItemPro
   return (
     <motion.div
       className="flex items-start gap-3 sm:gap-4"
-      initial={{ opacity: 0, x: -20 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ x: -20 }}
+      whileInView={{ x: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
     >
@@ -34,31 +34,38 @@ function ContactInfoItem({ icon: Icon, title, value, delay }: ContactInfoItemPro
   );
 }
 
-export function ContactInfo() {
+export function ContactInfo({
+  email,
+  phone,
+  address,
+}: {
+  email: string;
+  phone: string;
+  address: string;
+}) {
   return (
     <motion.div
       className="space-y-4 sm:space-y-5 md:space-y-6"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
+      initial={false}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: 0.4 }}
     >
       <ContactInfoItem
         icon={Mail}
         title="Email"
-        value="info@cebufurnituremaker.com"
+        value={email}
         delay={0.5}
       />
       <ContactInfoItem
         icon={Phone}
         title="Phone"
-        value="+63 32 123 4567"
+        value={phone}
         delay={0.6}
       />
       <ContactInfoItem
         icon={MapPin}
         title="Address"
-        value="Cebu City, Philippines"
+        value={address}
         delay={0.7}
       />
     </motion.div>

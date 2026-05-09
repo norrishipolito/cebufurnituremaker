@@ -2,6 +2,23 @@
 
 A Next.js landing page for Cebu Furniture Maker, built with React, TypeScript, Tailwind CSS, and pnpm.
 
+## Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Runtime and package manager | Node.js `20.9.0+`, pnpm |
+| App framework | Next.js App Router `16.2.5` |
+| Language and UI | TypeScript `6`, React `19`, Tailwind CSS `4` |
+| UI primitives | Radix UI, lucide-react, Framer Motion |
+| Backend endpoints | Next.js route handlers under `src/app/api/` |
+| Planned API layer for new features | tRPC |
+| Authentication and roles | Supabase Auth with `admin` and `maintainer` roles |
+| Database and ORM | Supabase Postgres, Drizzle ORM, `postgres` driver |
+| Image storage | Vercel Blob |
+| Validation | Zod |
+| Testing and quality | Playwright, ESLint, Next.js production build |
+| Deployment target | Vercel-compatible Next.js deployment |
+
 ## Requirements
 
 Install these before running the project:
@@ -77,3 +94,18 @@ Runs ESLint.
 - `src/common` - shared layouts
 - `public` - static assets
 - `docs` - project architecture and feature notes
+
+## Implementation Rules
+
+Before adding or changing features, read:
+
+- `docs/00-application-architecture.md`
+- `docs/01-component-architecture-rules.md`
+- `docs/02-feature-implementation-rules.md`
+- the relevant plan in `docs/feature/`
+
+These documents define the standing rules for editable content defaults, admin UX, Supabase, Vercel Blob, RBAC, documentation, and Playwright coverage.
+
+Database schema changes are managed with Drizzle ORM. See `docs/feature/08-orm-backend-implementation.md`.
+
+New backend-facing features should use tRPC for typed client/server calls unless there is a practical reason to keep a standard Next.js route handler, such as file uploads, webhooks, or public asset delivery.
