@@ -468,6 +468,7 @@ User management rules:
 - Create users through Supabase Auth Admin and write the matching `profiles` row through Drizzle.
 - Update user email, display name, optional password reset, and role from the admin UI.
 - Delete users from Supabase Auth and `profiles`.
+- Before deleting a user, detach nullable app-owned profile references such as authored projects, updated content, uploaded assets, testimonials, and audit log actor references. Those foreign keys should use `ON DELETE SET NULL` so deleting a user does not delete or block existing site content.
 - Role assignment must be explicit through an editor-facing role selector.
 - The signed-in admin cannot delete their own user or change their own role.
 - The system must keep at least one `admin` profile.

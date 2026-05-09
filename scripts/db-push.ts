@@ -48,7 +48,7 @@ const statements = [
   `create table if not exists public.site_sections (
     key text primary key,
     content jsonb not null,
-    updated_by uuid references public.profiles(id),
+    updated_by uuid references public.profiles(id) on delete set null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`,
@@ -59,7 +59,7 @@ const statements = [
     alt_text text not null,
     content_type text not null,
     size_bytes integer not null,
-    uploaded_by uuid references public.profiles(id),
+    uploaded_by uuid references public.profiles(id) on delete set null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`,
@@ -73,8 +73,8 @@ const statements = [
     primary_asset_id uuid references public.assets(id),
     sort_order integer not null default 0,
     published boolean not null default true,
-    created_by uuid references public.profiles(id),
-    updated_by uuid references public.profiles(id),
+    created_by uuid references public.profiles(id) on delete set null,
+    updated_by uuid references public.profiles(id) on delete set null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`,
@@ -92,8 +92,8 @@ const statements = [
     avatar_asset_id uuid references public.assets(id),
     sort_order integer not null default 0,
     published boolean not null default true,
-    created_by uuid references public.profiles(id),
-    updated_by uuid references public.profiles(id),
+    created_by uuid references public.profiles(id) on delete set null,
+    updated_by uuid references public.profiles(id) on delete set null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`,
@@ -109,7 +109,7 @@ const statements = [
   )`,
   `create table if not exists public.audit_logs (
     id uuid primary key default gen_random_uuid(),
-    actor_id uuid references public.profiles(id),
+    actor_id uuid references public.profiles(id) on delete set null,
     action text not null,
     entity_type text not null,
     entity_id text,
@@ -123,6 +123,139 @@ const statements = [
   `alter table public.profiles add column if not exists updated_at timestamptz not null default now()`,
   `alter table public.projects drop constraint if exists projects_group_check`,
   `alter table public.profiles drop constraint if exists profiles_role_check`,
+  `do $$
+  declare
+    profiles_auth_fk text;
+  begin
+    update public.site_sections section
+    set updated_by = null
+    where updated_by is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = section.updated_by
+      );
+
+    update public.assets asset
+    set uploaded_by = null
+    where uploaded_by is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = asset.uploaded_by
+      );
+
+    update public.projects project
+    set created_by = null
+    where created_by is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = project.created_by
+      );
+
+    update public.projects project
+    set updated_by = null
+    where updated_by is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = project.updated_by
+      );
+
+    update public.testimonials testimonial
+    set created_by = null
+    where created_by is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = testimonial.created_by
+      );
+
+    update public.testimonials testimonial
+    set updated_by = null
+    where updated_by is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = testimonial.updated_by
+      );
+
+    update public.audit_logs audit_log
+    set actor_id = null
+    where actor_id is not null
+      and not exists (
+        select 1
+        from public.profiles profile
+        join auth.users auth_user on auth_user.id = profile.id
+        where profile.id = audit_log.actor_id
+      );
+
+    alter table public.site_sections drop constraint if exists site_sections_updated_by_profiles_id_fk;
+    alter table public.site_sections drop constraint if exists site_sections_updated_by_fkey;
+    alter table public.assets drop constraint if exists assets_uploaded_by_profiles_id_fk;
+    alter table public.assets drop constraint if exists assets_uploaded_by_fkey;
+    alter table public.projects drop constraint if exists projects_created_by_profiles_id_fk;
+    alter table public.projects drop constraint if exists projects_created_by_fkey;
+    alter table public.projects drop constraint if exists projects_updated_by_profiles_id_fk;
+    alter table public.projects drop constraint if exists projects_updated_by_fkey;
+    alter table public.testimonials drop constraint if exists testimonials_created_by_profiles_id_fk;
+    alter table public.testimonials drop constraint if exists testimonials_created_by_fkey;
+    alter table public.testimonials drop constraint if exists testimonials_updated_by_profiles_id_fk;
+    alter table public.testimonials drop constraint if exists testimonials_updated_by_fkey;
+    alter table public.audit_logs drop constraint if exists audit_logs_actor_id_profiles_id_fk;
+    alter table public.audit_logs drop constraint if exists audit_logs_actor_id_fkey;
+
+    alter table public.site_sections
+      add constraint site_sections_updated_by_profiles_id_fk
+      foreign key (updated_by) references public.profiles(id) on delete set null;
+    alter table public.assets
+      add constraint assets_uploaded_by_profiles_id_fk
+      foreign key (uploaded_by) references public.profiles(id) on delete set null;
+    alter table public.projects
+      add constraint projects_created_by_profiles_id_fk
+      foreign key (created_by) references public.profiles(id) on delete set null;
+    alter table public.projects
+      add constraint projects_updated_by_profiles_id_fk
+      foreign key (updated_by) references public.profiles(id) on delete set null;
+    alter table public.testimonials
+      add constraint testimonials_created_by_profiles_id_fk
+      foreign key (created_by) references public.profiles(id) on delete set null;
+    alter table public.testimonials
+      add constraint testimonials_updated_by_profiles_id_fk
+      foreign key (updated_by) references public.profiles(id) on delete set null;
+    alter table public.audit_logs
+      add constraint audit_logs_actor_id_profiles_id_fk
+      foreign key (actor_id) references public.profiles(id) on delete set null;
+
+    for profiles_auth_fk in
+      select fk_constraint.conname
+      from pg_constraint fk_constraint
+      join pg_class table_class on table_class.oid = fk_constraint.conrelid
+      join pg_namespace table_namespace on table_namespace.oid = table_class.relnamespace
+      where fk_constraint.contype = 'f'
+        and table_namespace.nspname = 'public'
+        and table_class.relname = 'profiles'
+        and fk_constraint.confrelid = 'auth.users'::regclass
+    loop
+      execute format('alter table public.profiles drop constraint if exists %I', profiles_auth_fk);
+    end loop;
+
+    delete from public.profiles profile
+    where not exists (
+      select 1 from auth.users auth_user where auth_user.id = profile.id
+    );
+
+    alter table public.profiles
+      add constraint profiles_id_auth_users_id_fk
+      foreign key (id) references auth.users(id) on delete cascade;
+  end $$`,
   `alter table public.profiles enable row level security`,
   `alter table public.site_sections enable row level security`,
   `alter table public.assets enable row level security`,

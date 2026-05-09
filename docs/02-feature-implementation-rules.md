@@ -184,6 +184,8 @@ Never expose `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `BLOB_READ_W
 - Admin route handlers must reject requests with a mismatched `Origin` header before mutating data.
 - User management must be full CRUD for admins: create, list, update profile details/password/role, and delete.
 - User creation, email/password updates, and deletion must use Supabase Auth Admin plus the matching Drizzle `profiles` write.
+- User deletion must detach nullable app-owned profile references before removing the profile/Auth user so authored content, audit logs, and assets do not block deletion.
+- Nullable references to `profiles.id` should use `ON DELETE SET NULL`; `profiles.id` should reference `auth.users.id` with `ON DELETE CASCADE`.
 - The signed-in admin cannot delete their own account or change their own role.
 - The app must prevent removing the last remaining `admin` profile.
 - Desktop admin sidebars should be sticky and should not use an internally scrollable sidebar container.

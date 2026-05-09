@@ -50,7 +50,9 @@ export const siteSections = pgTable(
   {
     key: text("key").primaryKey(),
     content: jsonb("content").notNull().$type<unknown>(),
-    updated_by: uuid("updated_by").references(() => profiles.id),
+    updated_by: uuid("updated_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   () => [
@@ -77,7 +79,9 @@ export const assets = pgTable(
     alt_text: text("alt_text").notNull(),
     content_type: text("content_type").notNull(),
     size_bytes: integer("size_bytes").notNull(),
-    uploaded_by: uuid("uploaded_by").references(() => profiles.id),
+    uploaded_by: uuid("uploaded_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   () => [
@@ -107,8 +111,12 @@ export const projects = pgTable(
     primary_asset_id: uuid("primary_asset_id").references(() => assets.id),
     sort_order: integer("sort_order").notNull().default(0),
     published: boolean("published").notNull().default(true),
-    created_by: uuid("created_by").references(() => profiles.id),
-    updated_by: uuid("updated_by").references(() => profiles.id),
+    created_by: uuid("created_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
+    updated_by: uuid("updated_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   (table) => [
@@ -158,8 +166,12 @@ export const testimonials = pgTable(
     avatar_asset_id: uuid("avatar_asset_id").references(() => assets.id),
     sort_order: integer("sort_order").notNull().default(0),
     published: boolean("published").notNull().default(true),
-    created_by: uuid("created_by").references(() => profiles.id),
-    updated_by: uuid("updated_by").references(() => profiles.id),
+    created_by: uuid("created_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
+    updated_by: uuid("updated_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   (table) => [
@@ -207,7 +219,9 @@ export const auditLogs = pgTable(
   "audit_logs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    actor_id: uuid("actor_id").references(() => profiles.id),
+    actor_id: uuid("actor_id").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
     action: text("action").notNull(),
     entity_type: text("entity_type").notNull(),
     entity_id: text("entity_id"),

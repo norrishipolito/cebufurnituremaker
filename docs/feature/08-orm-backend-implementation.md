@@ -147,6 +147,7 @@ Supabase still manages:
 Admin user CRUD uses both systems:
 
 - Supabase Auth Admin creates, updates email/password metadata, and deletes auth users.
+- `profiles.id` is tied to Supabase Auth users, while nullable app-owned references to profiles use `ON DELETE SET NULL` so user deletion can detach authorship metadata without deleting projects, testimonials, assets, site content, or audit history.
 - Drizzle writes the matching `profiles` row and role.
 - Admin routes must block self deletion, self role changes, and removal of the last remaining `admin`.
 

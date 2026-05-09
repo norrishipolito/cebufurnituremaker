@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import { count, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { jsonError, missingServiceConfig } from "@/lib/api/responses";
-import { profiles } from "@/lib/db/schema";
+import {
+  assets,
+  auditLogs,
+  profiles,
+  projects,
+  siteSections,
+  testimonials,
+} from "@/lib/db/schema";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { getRequiredServiceClient, writeAuditLog } from "@/lib/site-content/mutations";
 import { updateUserSchema } from "@/lib/site-content/validators";
@@ -30,6 +37,37 @@ async function countAdmins(db: DbClient) {
     .where(eq(profiles.role, "admin"));
 
   return result?.value ?? 0;
+}
+
+async function detachProfileReferences(db: DbClient, id: string) {
+  await db
+    .update(siteSections)
+    .set({ updated_by: null, updated_at: new Date() })
+    .where(eq(siteSections.updated_by, id));
+  await db
+    .update(assets)
+    .set({ uploaded_by: null, updated_at: new Date() })
+    .where(eq(assets.uploaded_by, id));
+  await db
+    .update(projects)
+    .set({ created_by: null, updated_at: new Date() })
+    .where(eq(projects.created_by, id));
+  await db
+    .update(projects)
+    .set({ updated_by: null, updated_at: new Date() })
+    .where(eq(projects.updated_by, id));
+  await db
+    .update(testimonials)
+    .set({ created_by: null, updated_at: new Date() })
+    .where(eq(testimonials.created_by, id));
+  await db
+    .update(testimonials)
+    .set({ updated_by: null, updated_at: new Date() })
+    .where(eq(testimonials.updated_by, id));
+  await db
+    .update(auditLogs)
+    .set({ actor_id: null })
+    .where(eq(auditLogs.actor_id, id));
 }
 
 function normalizeDisplayName(value: string | undefined) {
@@ -233,17 +271,38 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
+    await detachProfileReferences(db, id);
+    await db.delete(profiles).where(eq(profiles.id, id));
+
     const { error } = await supabase.auth.admin.deleteUser(id);
 
     if (error) {
+      await db
+        .insert(profiles)
+        .values({
+          id: existing.id,
+          email: existing.email,
+          display_name: existing.display_name,
+          role: existing.role,
+          created_at: existing.created_at,
+          updated_at: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: profiles.id,
+          set: {
+            email: existing.email,
+            display_name: existing.display_name,
+            role: existing.role,
+            updated_at: new Date(),
+          },
+        });
+
       return jsonError(error, 400, {
         route: "/api/admin/users/[id]",
         method: "DELETE",
         actorId: guard.auth.userId,
       });
     }
-
-    await db.delete(profiles).where(eq(profiles.id, id));
 
     await writeAuditLog({
       actorId: guard.auth.userId,

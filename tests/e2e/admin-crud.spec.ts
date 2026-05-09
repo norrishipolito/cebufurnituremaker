@@ -1,5 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
-import { adminEmail, loginAsAdmin } from "./admin-helpers";
+import {
+  adminEmail,
+  loginAsAdmin,
+  loginWithCredentials,
+} from "./admin-helpers";
 
 async function deleteUsersByEmail(page: Page, emails: string[]) {
   const response = await page.request.get("/api/admin/users");
@@ -651,6 +655,86 @@ test.describe.serial("admin CRUD APIs", () => {
       await expect(updatedRow).toHaveCount(0);
     } finally {
       await deleteUsersByEmail(page, [email, updatedEmail]);
+    }
+  });
+
+  test("admin deletes a user who has authored content by detaching profile references", async ({
+    browser,
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    const unique = Date.now();
+    const email = `e2e-author-${unique}@cebufurnituremaker.com`;
+    const slug = `e2e-author-project-${unique}`;
+    let userId: string | null = null;
+    let projectId: string | null = null;
+
+    try {
+      const createUser = await page.request.post("/api/admin/users", {
+        data: {
+          display_name: `E2E Author ${unique}`,
+          email,
+          password: "Password1.",
+          role: "maintainer",
+        },
+      });
+      const createUserPayload = await createUser.json();
+      expect(createUser.status(), JSON.stringify(createUserPayload)).toBe(201);
+      userId = createUserPayload.user.id;
+
+      const maintainerPage = await browser.newPage();
+
+      try {
+        await loginWithCredentials(maintainerPage, email, "Password1.");
+        const createProject = await maintainerPage.request.post(
+          "/api/admin/projects",
+          {
+            data: {
+              slug,
+              title: `E2E Authored Project ${unique}`,
+              description: `Project created by a soon-to-be-deleted user ${unique}`,
+              category: "Testing",
+              group: "products",
+              sort_order: 0,
+              published: false,
+            },
+          }
+        );
+        const createProjectPayload = await createProject.json();
+        expect(createProject.status(), JSON.stringify(createProjectPayload)).toBe(
+          201
+        );
+        projectId = createProjectPayload.project.id;
+      } finally {
+        await maintainerPage.close();
+      }
+
+      const deleteUser = await page.request.delete(`/api/admin/users/${userId}`);
+      const deleteUserPayload = await deleteUser.json().catch(() => null);
+      expect(deleteUser.status(), JSON.stringify(deleteUserPayload)).toBe(200);
+
+      const users = await page.request.get("/api/admin/users");
+      expect(users.ok()).toBeTruthy();
+      const usersPayload = await users.json();
+      expect(
+        usersPayload.users?.some((user: { email?: string }) => user.email === email)
+      ).toBeFalsy();
+
+      const projectsResponse = await page.request.get("/api/admin/projects");
+      expect(projectsResponse.ok()).toBeTruthy();
+      const projectsPayload = await projectsResponse.json();
+      expect(
+        projectsPayload.projects?.some(
+          (project: { id?: string; slug?: string }) =>
+            project.id === projectId && project.slug === slug
+        )
+      ).toBeTruthy();
+    } finally {
+      if (projectId) {
+        await page.request.delete(`/api/admin/projects/${projectId}`);
+      }
+
+      await deleteUsersByEmail(page, [email]);
     }
   });
 
