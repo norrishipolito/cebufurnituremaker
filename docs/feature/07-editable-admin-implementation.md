@@ -40,6 +40,8 @@ src/
 |   |   |   `-- page.tsx
 |   |   |-- media/
 |   |   |   `-- page.tsx
+|   |   |-- documentation/
+|   |   |   `-- page.tsx
 |   |   |-- settings/
 |   |   |   `-- page.tsx
 |   |   |-- users/
@@ -408,9 +410,13 @@ Initial admin pages:
 - Settings: site-level settings for admins.
 - Users: create, list, edit profile details, reset passwords, assign roles, and delete users for admins only.
 - The sidebar must hide admin-only `Users` and `Settings` links for maintainers.
+- Documentation: authenticated admin manual with a table-of-contents sidebar, page-by-page workflow guidance, sample inputs, and visual UI previews.
+- The Documentation page must hide admin-only `Users` and `Settings` manual sections from maintainers.
+- The desktop sidebar includes a bottom `Documentation` link.
 
 The admin should be practical and dense rather than marketing-like. Use existing UI primitives and keep forms predictable.
 The desktop admin sidebar should stay sticky and must not have its own scrollable container.
+The authenticated admin header should stay sticky at the top of scrollable admin pages and must not create a nested page scroll container.
 The admin header should include a visible `Sign out` action for authenticated users. Sign-out should clear only the current browser session, not every active session for the same Supabase user.
 The `/admin/login` page should not show the admin header, sidebar, or navigation links because the user is not authenticated yet.
 

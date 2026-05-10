@@ -738,14 +738,16 @@ test.describe.serial("admin CRUD APIs", () => {
     }
   });
 
-  test("admin sidebar is sticky and does not scroll internally", async ({
+  test("admin sidebar and header stay sticky without internal sidebar scrolling", async ({
     page,
   }) => {
     await loginAsAdmin(page);
     await page.goto("/admin/projects");
 
     const sidebar = page.locator("aside").first();
+    const header = page.getByRole("banner");
     await expect(sidebar).toBeVisible();
+    await expect(header).toBeVisible();
 
     const styles = await sidebar.evaluate((element) => {
       const computed = window.getComputedStyle(element);
@@ -755,12 +757,24 @@ test.describe.serial("admin CRUD APIs", () => {
         overflowY: computed.overflowY,
       };
     });
+    const headerStyles = await header.evaluate((element) => {
+      const computed = window.getComputedStyle(element);
+
+      return {
+        position: computed.position,
+        top: computed.top,
+      };
+    });
 
     expect(styles.position).toBe("sticky");
     expect(styles.overflowY).toBe("hidden");
+    expect(headerStyles.position).toBe("sticky");
+    expect(headerStyles.top).toBe("0px");
 
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    const box = await sidebar.boundingBox();
-    expect(box?.y ?? 0).toBeLessThanOrEqual(1);
+    const sidebarBox = await sidebar.boundingBox();
+    const headerBox = await header.boundingBox();
+    expect(sidebarBox?.y ?? 0).toBeLessThanOrEqual(1);
+    expect(headerBox?.y ?? 0).toBeLessThanOrEqual(1);
   });
 });

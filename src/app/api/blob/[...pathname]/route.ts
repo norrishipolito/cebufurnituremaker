@@ -3,6 +3,7 @@ import { createDbClient } from "@/lib/db/client";
 import { assets } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getPrivateBlob } from "@/lib/blob/upload";
+import { logBackendError } from "@/lib/api/logger";
 
 interface RouteContext {
   params: Promise<{ pathname: string[] }>;
@@ -63,7 +64,12 @@ export async function GET(request: Request, context: RouteContext) {
       },
     });
   } catch (error) {
-    console.error("Unable to read blob", error);
+    logBackendError(error, {
+      route: "/api/blob/[...pathname]",
+      method: "GET",
+      status: 500,
+      message: "Unable to read blob.",
+    });
     return NextResponse.json(
       { error: "Unable to read blob." },
       { status: 500 }

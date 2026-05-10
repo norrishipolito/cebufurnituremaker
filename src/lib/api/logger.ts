@@ -1,3 +1,16 @@
+import "server-only";
+
+type BackendLogLevel = "debug" | "info" | "warn" | "error";
+
+export interface BackendLogContext {
+  route?: string;
+  method?: string;
+  status?: number;
+  actorId?: string;
+  message?: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface ApiLogContext {
   route: string;
   method?: string;
@@ -65,17 +78,45 @@ function serializeError(error: unknown) {
   return error;
 }
 
+function writeBackendLog(
+  logLevel: BackendLogLevel,
+  context: BackendLogContext,
+  error?: unknown
+) {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    logLevel,
+    runtime: "backend",
+    ...context,
+    error: error === undefined ? undefined : serializeError(error),
+  };
+  const serialized = JSON.stringify(payload, null, 2);
+
+  if (logLevel === "error") {
+    console.error(serialized);
+    return;
+  }
+
+  if (logLevel === "warn") {
+    console.warn(serialized);
+    return;
+  }
+
+  console.log(serialized);
+}
+
+export function logBackendInfo(context: BackendLogContext) {
+  writeBackendLog("info", context);
+}
+
+export function logBackendWarning(context: BackendLogContext, error?: unknown) {
+  writeBackendLog("warn", context, error);
+}
+
+export function logBackendError(error: unknown, context: BackendLogContext) {
+  writeBackendLog("error", context, error);
+}
+
 export function logApiError(error: unknown, context: ApiLogContext) {
-  console.error(
-    JSON.stringify(
-      {
-        level: "error",
-        time: new Date().toISOString(),
-        ...context,
-        error: serializeError(error),
-      },
-      null,
-      2
-    )
-  );
+  logBackendError(error, context);
 }

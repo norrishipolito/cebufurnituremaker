@@ -7,7 +7,7 @@ import { AdminThemeToggle } from "./admin-theme-toggle";
 
 export function AdminHeader({ profile }: { profile: AdminProfile | null }) {
   return (
-    <header className="flex min-h-14 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-950">
+    <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-950">
       <div>
         <p className="text-sm font-medium">Admin</p>
         <p className="text-xs text-gray-500">

@@ -47,6 +47,30 @@ test("maintainer does not see users or settings links in the sidebar", async ({
     await expect(page).toHaveURL(/\/admin$/);
     await page.goto("/admin/settings");
     await expect(page).toHaveURL(/\/admin$/);
+
+    await page.goto("/admin/documentation");
+    await expect(
+      page.getByRole("heading", { name: "Admin Documentation" })
+    ).toBeVisible();
+
+    const documentationMain = page.getByRole("main");
+    await expect(
+      documentationMain.getByRole("link", { name: "Users" })
+    ).toHaveCount(0);
+    await expect(
+      documentationMain.getByRole("link", { name: "Settings" })
+    ).toHaveCount(0);
+    await expect(
+      documentationMain.getByRole("heading", { name: "Users" })
+    ).toHaveCount(0);
+    await expect(
+      documentationMain.getByRole("heading", { name: "Settings" })
+    ).toHaveCount(0);
+    await expect(
+      documentationMain.getByText(
+        "Admins use Users for account creation, role assignment, password changes, and deletion."
+      )
+    ).toHaveCount(0);
   } finally {
     await loginAsAdmin(page);
 

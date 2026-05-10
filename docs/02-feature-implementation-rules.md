@@ -78,6 +78,8 @@ If a feature is documentation-only, tests are not required, but the doc change s
 - Labels should describe the actual editable field, such as `Hero heading` or `Contact email`.
 - Inputs should include example placeholders where helpful, such as `Category (ex. Dining Room)`.
 - Admin pages should support the expected workflows: edit content, create/update projects, manage testimonials, review/update/delete media, and manage users according to role.
+- Admin UI must include an authenticated Documentation page with a table-of-contents sidebar, page-by-page usage instructions, sample inputs, and quick workflow references.
+- Desktop admin sidebar should include a bottom `Documentation` link.
 - Admin content sections should be expandable/collapsible and collapsed by default so editors can focus on one area without losing quick access to the rest.
 - Admin UI must support dark mode through an editor-facing toggle and should persist the selected admin theme locally.
 - Footer social links are editable in the footer content editor. The public footer should expose Facebook, Instagram, and Twitter only unless a future feature explicitly adds another platform.
@@ -98,6 +100,7 @@ If a feature is documentation-only, tests are not required, but the doc change s
 - Keep admin APIs under `src/app/api/admin/`.
 - Validate inputs with structured validators before writing to the database.
 - Backend write failures should be logged with structured context through the shared API logger.
+- Backend logs must use the shared server-only logger and include `timestamp`, `logLevel`, and `runtime: "backend"`.
 - API logs should include route, method, status, actor id when available, error code, detail, hint, and constraint, but must not expose raw SQL query params or secrets.
 - Return appropriate API statuses:
   - `400` for invalid input.
@@ -179,10 +182,12 @@ Never expose `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `BLOB_READ_W
 - `/admin/login` must not show the admin header, sidebar, or admin navigation links.
 - Authenticated admin pages must expose a visible sign-out action.
 - Admin sign-out should clear only the current browser session, not every active session for the same Supabase user.
+- Authenticated admin headers should stay sticky at the top of scrollable admin pages without creating nested page scrolling.
 - `admin` has full access, including users and roles.
 - `maintainer` can manage site content, projects, testimonials, and media.
 - `maintainer` cannot manage users, roles, or protected settings.
 - Maintainers must not see admin-only `Users` or `Settings` links in the admin sidebar.
+- Maintainers must not see admin-only `Users` or `Settings` sections in the admin Documentation page.
 - Every admin page and admin route handler must check session and role.
 - Admin route handlers must reject requests with a mismatched `Origin` header before mutating data.
 - User management must be full CRUD for admins: create, list, update profile details/password/role, and delete.
