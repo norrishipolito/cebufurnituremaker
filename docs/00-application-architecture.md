@@ -4,6 +4,23 @@
 
 This document outlines the architectural revamp plan for the Cebu Furniture Maker application. The goal is to establish a scalable, maintainable structure that separates concerns and follows Next.js App Router best practices.
 
+## Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Runtime and package manager | Node.js `20.9.0+`, pnpm |
+| App framework | Next.js App Router `16.2.5` |
+| Language and UI | TypeScript `6`, React `19`, Tailwind CSS `4` |
+| UI primitives | Radix UI, lucide-react, Framer Motion |
+| Backend endpoints | Next.js route handlers under `src/app/api/` |
+| Planned API layer for new features | tRPC |
+| Authentication and roles | Supabase Auth with `admin` and `maintainer` roles |
+| Database and ORM | Supabase Postgres, Drizzle ORM, `postgres` driver |
+| Image storage | Vercel Blob |
+| Validation | Zod |
+| Testing and quality | Playwright, ESLint, Next.js production build |
+| Deployment target | Vercel-compatible Next.js deployment |
+
 ## Current State
 
 ### Files to Remove
@@ -47,6 +64,8 @@ src/
 ```
 
 ## Architecture Principles
+
+New backend-facing features should use tRPC for typed client/server calls. Existing Next.js route handlers can remain in place until they are intentionally migrated, and route handlers are still appropriate for file uploads, webhooks, public asset delivery, and other HTTP-specific endpoints.
 
 ### 1. Route Groups (`app/(landing-page)`)
 

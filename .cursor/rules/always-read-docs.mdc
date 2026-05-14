@@ -1,0 +1,27 @@
+---
+description: Always read repository documentation and rules before implementation.
+globs:
+alwaysApply: true
+---
+
+# Always Read Repository Docs
+
+Before planning or implementing changes in this repository:
+
+1. Read `AGENTS.md`.
+2. Read every Markdown file under `docs/rules/`.
+3. Read every Markdown file directly under `docs/`.
+4. Read the relevant feature plan under `docs/feature/`.
+5. If scope is broad or unclear, read all Markdown files under `docs/feature/`.
+
+Keep documentation synchronized with implementation changes in the same task.
+
+Key references:
+
+- @AGENTS.md
+- @docs/rules/README.md
+- @docs/00-application-architecture.md
+- @docs/01-component-architecture-rules.md
+- @docs/02-feature-implementation-rules.md
+- @docs/03-chat-implementation-summary.md
+

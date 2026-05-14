@@ -8,8 +8,7 @@ export function FooterBottom() {
   return (
     <motion.div
       className="mt-8 pt-6 sm:mt-10 sm:pt-7 md:mt-12 md:pt-8 border-t border-gray-200 dark:border-gray-800"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
+      initial={false}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: 0.5 }}
     >

@@ -1,51 +1,74 @@
-"use client";
+import { HeroClient } from "@/features/home/hero/components/hero-client";
+import { defaultSiteContent } from "@/lib/default-site-content";
+import { getSiteSection } from "@/lib/site-content/queries";
 
-import { useState } from "react";
-import { useScroll, useTransform, useMotionValueEvent } from "framer-motion";
-import { HeroBackground } from "@/features/home/hero/components/hero-background";
-import { HeroLogo } from "@/features/home/hero/components/hero-logo";
-import { HeroContent } from "@/features/home/hero/components/hero-content";
-import { HeroFooterBar } from "@/features/home/hero/components/hero-footer-bar";
+export interface HeroSectionContent {
+  heading: string;
+  emphasizedHeading: string;
+  tagline: string;
+  backgroundImage: {
+    url: string;
+    alt: string;
+  };
+  footerFeatures: Array<{
+    icon: string;
+    text: string;
+  }>;
+}
 
-/**
- * Hero Section Component
- * 
- * Main hero section with:
- * - Parallax background image
- * - Animated logo (transitions to navigation on scroll)
- * - Fading content (headline and tagline)
- * - Footer bar with key features
- * 
- * Scroll animations:
- * - Background: Parallax effect (0-500px scroll range)
- * - Content: Fade out and scale down (0-300px scroll range)
- * - Logo: Fade out and scale down (50-150px scroll range)
- */
-export function Hero() {
-  const { scrollY } = useScroll();
-  const [hasScrolledDown, setHasScrolledDown] = useState(false);
-  
-  // Parallax and fade animations
-  const backgroundY = useTransform(scrollY, [0, 500], [0, 200]);
-  const contentOpacity = useTransform(scrollY, [0, 300], [1, 0]);
-  const contentScale = useTransform(scrollY, [0, 300], [1, 0.95]);
+function asHeroContent(content: unknown): HeroSectionContent {
+  const fallback = defaultSiteContent.hero;
+  const fallbackContent = {
+    heading: fallback.heading,
+    emphasizedHeading: fallback.emphasizedHeading,
+    tagline: fallback.tagline,
+    backgroundImage: { ...fallback.backgroundImage },
+    footerFeatures: [...fallback.footerFeatures],
+  };
 
-  // Track if user has scrolled down to prevent logo animation on scroll back up
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 150) {
-      setHasScrolledDown(true);
-    } else if (latest < 50 && hasScrolledDown) {
-      // Reset when back at top after having scrolled down
-      setHasScrolledDown(false);
-    }
-  });
+  if (!content || typeof content !== "object") {
+    return fallbackContent;
+  }
 
-  return (
-    <section id="hero" className="relative flex min-h-screen w-full items-center justify-center overflow-hidden">
-      <HeroBackground backgroundY={backgroundY} />
-      <HeroLogo hasScrolledDown={hasScrolledDown} />
-      <HeroContent opacity={contentOpacity} scale={contentScale} />
-      <HeroFooterBar />
-    </section>
-  );
+  const source = content as Partial<HeroSectionContent>;
+
+  return {
+    heading:
+      typeof source.heading === "string" ? source.heading : fallbackContent.heading,
+    emphasizedHeading:
+      typeof source.emphasizedHeading === "string"
+        ? source.emphasizedHeading
+        : fallbackContent.emphasizedHeading,
+    tagline:
+      typeof source.tagline === "string" ? source.tagline : fallbackContent.tagline,
+    backgroundImage: {
+      url:
+        typeof source.backgroundImage?.url === "string"
+          ? source.backgroundImage.url
+          : fallbackContent.backgroundImage.url,
+      alt:
+        typeof source.backgroundImage?.alt === "string"
+          ? source.backgroundImage.alt
+          : fallbackContent.backgroundImage.alt,
+    },
+    footerFeatures: Array.isArray(source.footerFeatures)
+      ? source.footerFeatures
+          .filter((feature) => feature && typeof feature === "object")
+          .map((feature) => {
+            const item = feature as { icon?: unknown; text?: unknown };
+
+            return {
+              icon: typeof item.icon === "string" ? item.icon : "Shield",
+              text: typeof item.text === "string" ? item.text : "",
+            };
+          })
+          .filter((feature) => feature.text)
+      : fallbackContent.footerFeatures,
+  };
+}
+
+export async function Hero() {
+  const { content } = await getSiteSection("hero");
+
+  return <HeroClient content={asHeroContent(content)} />;
 }

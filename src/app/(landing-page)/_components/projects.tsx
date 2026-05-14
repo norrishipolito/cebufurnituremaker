@@ -1,25 +1,72 @@
-"use client";
+import { ProjectsClient } from "@/features/home/projects/components/projects-client";
+import { getPublicProjects } from "@/lib/site-content/queries";
 
-import { useState, useMemo } from "react";
-import { ProjectsHeader } from "@/features/home/projects/components/projects-header";
-import { ProjectsTabs } from "@/features/home/projects/components/projects-tabs";
-import { ProjectsGrid } from "@/features/home/projects/components/projects-grid";
-import { furnitureProducts } from "@/features/home/projects/components/projects-data";
-import type { ProductType } from "@/features/home/projects/components/projects-data";
+const groupLabels: Record<string, string> = {
+  products: "Products",
+  showroom: "Showroom",
+  fabrication_site: "Fabrication Site",
+};
 
-export function Projects() {
-  const [activeTab, setActiveTab] = useState<ProductType>("Set");
+function toGroupLabel(group: string) {
+  return (
+    groupLabels[group] ??
+    group
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase())
+  );
+}
 
-  const filteredProducts = useMemo(() => {
-    return furnitureProducts.filter((product) => product.type === activeTab);
-  }, [activeTab]);
+interface PublicProjectRow {
+  slug: string;
+  image?: string;
+  images?: {
+    id?: string;
+    url: string;
+    alt: string;
+  }[];
+  title: string;
+  description: string;
+  category: string;
+  group?: string;
+  primary_asset?: {
+    blob_url?: string | null;
+    blob_pathname?: string | null;
+    alt_text?: string | null;
+  } | null;
+}
+
+export async function Projects() {
+  const { projects } = await getPublicProjects();
+  const mappedProjects = (projects as PublicProjectRow[]).map((project) => {
+    const primaryImage = project.primary_asset?.blob_pathname
+      ? `/api/blob/${project.primary_asset.blob_pathname}`
+      : project.primary_asset?.blob_url ?? project.image ?? "";
+    const images =
+      project.images?.length
+        ? project.images
+        : primaryImage
+          ? [{ url: primaryImage, alt: project.primary_asset?.alt_text ?? project.title }]
+          : [];
+
+    return {
+      slug: project.slug,
+      image: primaryImage || images[0]?.url || "",
+      imageAlt: images[0]?.alt ?? project.title,
+      images,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      group: project.group ?? "products",
+      groupLabel: toGroupLabel(project.group ?? "products"),
+    };
+  });
 
   return (
     <section id="projects" className="py-12 px-4 sm:py-16 sm:px-6 md:py-20 lg:py-24 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl">
-        <ProjectsHeader />
-        <ProjectsTabs activeTab={activeTab} onTabChange={setActiveTab} />
-        <ProjectsGrid products={filteredProducts} />
+        <ProjectsClient products={mappedProjects} />
       </div>
     </section>
   );
