@@ -35,7 +35,6 @@ export function LoginForm() {
 
       setRedirecting(true);
       router.replace("/admin");
-      router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to sign in.");
       setRedirecting(false);

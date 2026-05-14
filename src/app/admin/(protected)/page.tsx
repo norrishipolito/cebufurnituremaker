@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { AdminPageShell } from "./_components/admin-page-shell";
-import { AdminNavLink } from "./_components/admin-navigation-progress";
+import { AdminPageShell } from "../_components/admin-page-shell";
+import { AdminNavLink } from "../_components/admin-navigation-progress";
 import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { canManageUsers } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";

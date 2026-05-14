@@ -414,6 +414,9 @@ Initial admin pages:
 - The Documentation page must hide admin-only `Users` and `Settings` manual sections from maintainers.
 - The desktop sidebar includes a bottom `Documentation` link.
 - Admin login, sign-out, sidebar, and dashboard navigation show pending feedback while server-authenticated route changes are resolving so deployed pages do not appear idle or re-enabled mid-transition.
+- Supabase session refresh in the proxy is scoped to authenticated admin/admin API routes so public pages do not pay an auth network round trip on every request.
+- Admin profile lookup is request-cached so the authenticated layout and matching page do not repeat the same Supabase/profile queries during one render.
+- Authenticated admin pages live under an internal `(protected)` route group so `/admin/login` does not fetch or reuse the authenticated admin chrome/profile layout.
 
 The admin should be practical and dense rather than marketing-like. Use existing UI primitives and keep forms predictable.
 The desktop admin sidebar should stay sticky and must not have its own scrollable container.

@@ -18,7 +18,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
-import { AdminPageShell } from "../_components/admin-page-shell";
+import { AdminPageShell } from "../../_components/admin-page-shell";
 import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { canManageSettings, canManageUsers } from "@/lib/auth/roles";
 
