@@ -30,11 +30,10 @@ const getCurrentAdminProfileForRequest = cache(
       return null;
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data, error } = await supabase.auth.getClaims();
+    const userId = data?.claims.sub;
 
-    if (!user) {
+    if (error || !userId) {
       return null;
     }
 
@@ -52,7 +51,7 @@ const getCurrentAdminProfileForRequest = cache(
         role: profiles.role,
       })
       .from(profiles)
-      .where(eq(profiles.id, user.id))
+      .where(eq(profiles.id, userId))
       .limit(1);
 
     if (!profile || !isAdminRole(profile.role)) {
@@ -60,7 +59,7 @@ const getCurrentAdminProfileForRequest = cache(
     }
 
     return {
-      userId: user.id,
+      userId,
       profile: profile as AdminProfile,
     };
   }

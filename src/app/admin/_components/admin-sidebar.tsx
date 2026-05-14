@@ -12,6 +12,7 @@ import type { AdminProfile } from "@/lib/auth/roles";
 import { canManageSettings, canManageUsers } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 import { AdminNavLink } from "./admin-navigation-progress";
+import { AdminRoutePrefetcher } from "./admin-route-prefetcher";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -43,6 +44,10 @@ export function AdminSidebar({
       ? canManageUsers(profile.role) && canManageSettings(profile.role)
       : false;
   });
+  const prefetchHrefs = [
+    ...visibleItems.map((item) => item.href),
+    ...supportNavItems.map((item) => item.href),
+  ];
 
   return (
     <aside
@@ -51,6 +56,7 @@ export function AdminSidebar({
         className
       )}
     >
+      <AdminRoutePrefetcher hrefs={prefetchHrefs} />
       <AdminNavLink href="/admin" className="mb-6 block px-3 text-sm font-semibold">
         Cebu Furniture Admin
       </AdminNavLink>

@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
 import { AdminPageShell } from "../../_components/admin-page-shell";
-import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import {
   MediaManager,
   type AdminAsset,
@@ -10,12 +8,6 @@ import { assets } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
 
 export default async function AdminMediaPage() {
-  const auth = await getCurrentAdminProfile();
-
-  if (!auth) {
-    redirect("/admin/login");
-  }
-
   const db = createDbClient();
   const data = db
     ? await db.select().from(assets).orderBy(desc(assets.created_at))

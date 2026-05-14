@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   createContext,
+  type FocusEvent,
   useContext,
   useMemo,
   useState,
@@ -96,15 +97,56 @@ export function AdminNavLink({
   href,
   className,
   children,
+  onFocus,
   onClick,
+  onMouseEnter,
+  prefetch,
   target,
   ...props
 }: AdminNavLinkProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { pendingHref, startNavigation } = useAdminNavigation();
   const isPending =
     pendingHref !== null &&
     getPathnameFromHref(pendingHref) === getPathnameFromHref(href);
+
+  function prefetchRoute() {
+    if (prefetch === false) {
+      return;
+    }
+
+    if (window.navigator.webdriver) {
+      return;
+    }
+
+    const nextUrl = new URL(href, window.location.href);
+
+    if (
+      nextUrl.origin !== window.location.origin ||
+      nextUrl.pathname === pathname
+    ) {
+      return;
+    }
+
+    router.prefetch(href);
+  }
+
+  function handleFocus(event: FocusEvent<HTMLAnchorElement>) {
+    onFocus?.(event);
+
+    if (!event.defaultPrevented) {
+      prefetchRoute();
+    }
+  }
+
+  function handleMouseEnter(event: MouseEvent<HTMLAnchorElement>) {
+    onMouseEnter?.(event);
+
+    if (!event.defaultPrevented) {
+      prefetchRoute();
+    }
+  }
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     onClick?.(event);
@@ -135,7 +177,10 @@ export function AdminNavLink({
         "data-[pending=true]:cursor-wait data-[pending=true]:bg-gray-100 data-[pending=true]:text-gray-950 dark:data-[pending=true]:bg-gray-900 dark:data-[pending=true]:text-white",
         className
       )}
+      onFocus={handleFocus}
       onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      prefetch={prefetch}
       {...props}
     >
       {children}

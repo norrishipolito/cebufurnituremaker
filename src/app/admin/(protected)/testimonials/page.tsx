@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
 import { AdminPageShell } from "../../_components/admin-page-shell";
-import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { defaultSiteContent } from "@/lib/default-site-content";
 import {
   TestimonialManager,
@@ -11,12 +9,6 @@ import { testimonials as testimonialsTable } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
 
 export default async function AdminTestimonialsPage() {
-  const auth = await getCurrentAdminProfile();
-
-  if (!auth) {
-    redirect("/admin/login");
-  }
-
   const db = createDbClient();
   const data = db
     ? await db

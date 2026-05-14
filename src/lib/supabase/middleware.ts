@@ -27,6 +27,6 @@ export async function updateSupabaseSession(
     },
   });
 
-  await supabase.auth.getUser();
+  await supabase.auth.getClaims();
   return response;
 }

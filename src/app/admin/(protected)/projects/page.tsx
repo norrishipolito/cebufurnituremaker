@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
 import { AdminPageShell } from "../../_components/admin-page-shell";
-import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { defaultSiteContent } from "@/lib/default-site-content";
 import {
   ProjectManager,
@@ -11,12 +9,6 @@ import { assets, projectAssets, projects as projectsTable } from "@/lib/db/schem
 import { asc, eq, inArray } from "drizzle-orm";
 
 export default async function AdminProjectsPage() {
-  const auth = await getCurrentAdminProfile();
-
-  if (!auth) {
-    redirect("/admin/login");
-  }
-
   const db = createDbClient();
   const data = db
     ? await db

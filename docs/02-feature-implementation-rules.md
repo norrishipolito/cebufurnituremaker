@@ -182,6 +182,7 @@ Never expose `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `BLOB_READ_W
 
 - `/admin` pages require authentication.
 - `/admin/login` must not show the admin header, sidebar, or admin navigation links.
+- Server-side admin identity checks should prefer Supabase `getClaims()` over `getUser()` so asymmetric JWT projects can validate tokens through local/JWKS-backed verification instead of calling Supabase Auth on every navigation.
 - Authenticated admin pages must expose a visible sign-out action.
 - Admin sign-out should clear only the current browser session, not every active session for the same Supabase user.
 - Authenticated admin headers should stay sticky at the top of scrollable admin pages without creating nested page scrolling.

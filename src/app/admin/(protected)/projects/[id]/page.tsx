@@ -1,18 +1,10 @@
-import { redirect } from "next/navigation";
 import { AdminPageShell } from "../../../_components/admin-page-shell";
-import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 
 export default async function AdminProjectDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const auth = await getCurrentAdminProfile();
-
-  if (!auth) {
-    redirect("/admin/login");
-  }
-
   const { id } = await params;
 
   return (
