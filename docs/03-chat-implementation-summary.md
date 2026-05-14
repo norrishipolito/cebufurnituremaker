@@ -24,6 +24,7 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - `/admin/login` must not show admin header, sidebar, or admin navigation.
 - Authenticated admin pages show the admin header, sticky sidebar, and sign-out button.
 - Authenticated admin pages include a Documentation page linked from the bottom of the desktop sidebar. The documentation page should have its own table-of-contents sidebar and page-by-page admin UI instructions.
+- Admin sign-in, sign-out, sidebar links, and dashboard links show pending feedback while server-authenticated route changes are still resolving.
 - Maintainers must not see admin-only Users or Settings navigation or documentation sections.
 - Maintainers must not see `Users` or `Settings` links.
 - Admins can manage users and assign roles.

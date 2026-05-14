@@ -413,6 +413,7 @@ Initial admin pages:
 - Documentation: authenticated admin manual with a table-of-contents sidebar, page-by-page workflow guidance, sample inputs, and visual UI previews.
 - The Documentation page must hide admin-only `Users` and `Settings` manual sections from maintainers.
 - The desktop sidebar includes a bottom `Documentation` link.
+- Admin login, sign-out, sidebar, and dashboard navigation show pending feedback while server-authenticated route changes are resolving so deployed pages do not appear idle or re-enabled mid-transition.
 
 The admin should be practical and dense rather than marketing-like. Use existing UI primitives and keep forms predictable.
 The desktop admin sidebar should stay sticky and must not have its own scrollable container.

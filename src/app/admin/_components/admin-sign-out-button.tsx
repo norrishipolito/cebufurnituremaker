@@ -18,7 +18,7 @@ export function AdminSignOutButton() {
       await supabase.auth.signOut({ scope: "local" });
       router.replace("/admin/login");
       router.refresh();
-    } finally {
+    } catch {
       setLoading(false);
     }
   }
