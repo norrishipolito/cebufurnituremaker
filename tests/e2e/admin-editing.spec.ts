@@ -73,6 +73,14 @@ test.describe.serial("authenticated admin editing", () => {
       ...originalContact,
       title: `Admin Contact ${unique}`,
       email: `admin-${unique}@example.com`,
+      emailDescription: `Admin email description ${unique}`,
+      projectInquiryLabel: `Admin inquiries ${unique}`,
+      projectInquiryValue: `Admin project card value ${unique}`,
+      projectInquiryDescription: `Admin inquiry description ${unique}`,
+      phoneDescription: `Admin phone description ${unique}`,
+      addressDescription: `Admin address description ${unique}`,
+      hoursTitle: `Admin hours ${unique}`,
+      hours: `By appointment ${unique}`,
     };
     const updatedFooter = {
       ...originalFooter,
@@ -92,6 +100,26 @@ test.describe.serial("authenticated admin editing", () => {
       await expandContentSection(page, "Contact");
       await page.getByLabel("Contact title").fill(updatedContact.title);
       await page.getByLabel("Contact email").fill(updatedContact.email);
+      await page
+        .getByLabel("Email card description")
+        .fill(updatedContact.emailDescription);
+      await page
+        .getByLabel("Project inquiry card title")
+        .fill(updatedContact.projectInquiryLabel);
+      await page
+        .getByLabel("Project inquiry card value")
+        .fill(updatedContact.projectInquiryValue);
+      await page
+        .getByLabel("Project inquiry card description")
+        .fill(updatedContact.projectInquiryDescription);
+      await page
+        .getByLabel("Phone card description")
+        .fill(updatedContact.phoneDescription);
+      await page
+        .getByLabel("Address card description")
+        .fill(updatedContact.addressDescription);
+      await page.getByLabel("Hours card title").fill(updatedContact.hoursTitle);
+      await page.getByLabel("Workshop hours").fill(updatedContact.hours);
       await page.getByRole("button", { name: /save contact/i }).click();
       await expect(page.getByTestId("content-editor-contact-status")).toHaveText(
         /saved/i
@@ -110,6 +138,10 @@ test.describe.serial("authenticated admin editing", () => {
         page.getByRole("heading", { name: updatedAbout.title })
       ).toBeVisible();
       await expect(page.getByText(updatedContact.email)).toBeVisible();
+      await expect(page.getByText(updatedContact.emailDescription)).toBeVisible();
+      await expect(page.getByText(updatedContact.projectInquiryLabel)).toBeVisible();
+      await expect(page.getByText(updatedContact.projectInquiryValue)).toBeVisible();
+      await expect(page.getByText(updatedContact.hours)).toBeVisible();
       await expect(page.getByText(updatedFooter.brand)).toBeVisible();
       await expect(page.getByRole("link", { name: "Facebook" })).toHaveAttribute(
         "href",
@@ -133,6 +165,14 @@ test.describe.serial("authenticated admin editing", () => {
     await expandContentSection(page, "Footer");
     await expect(page.getByLabel("Hero heading")).toBeVisible();
     await expect(page.getByLabel("Contact email")).toBeVisible();
+    await expect(page.getByLabel("Email card description")).toBeVisible();
+    await expect(page.getByLabel("Project inquiry card title")).toBeVisible();
+    await expect(page.getByLabel("Project inquiry card value")).toBeVisible();
+    await expect(page.getByLabel("Project inquiry card description")).toBeVisible();
+    await expect(page.getByLabel("Phone card description")).toBeVisible();
+    await expect(page.getByLabel("Address card description")).toBeVisible();
+    await expect(page.getByLabel("Hours card title")).toBeVisible();
+    await expect(page.getByLabel("Workshop hours")).toBeVisible();
     await expect(page.getByLabel("Footer brand description")).toBeVisible();
     await expect(page.getByLabel("Facebook URL")).toBeVisible();
     await expect(page.getByLabel("Instagram URL")).toBeVisible();

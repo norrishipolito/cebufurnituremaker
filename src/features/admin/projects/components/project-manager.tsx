@@ -25,6 +25,7 @@ export interface AdminProject {
   published: boolean;
   image?: string;
   primary_asset?: ProjectAsset | null;
+  images?: ProjectAsset[];
   editable?: boolean;
 }
 
@@ -91,14 +92,53 @@ async function uploadProjectImage(file: File, altText: string) {
   return payload.asset as ProjectAsset;
 }
 
+async function uploadProjectImages(files: File[], altText: string) {
+  const uploadedAssets: ProjectAsset[] = [];
+
+  for (const file of files) {
+    uploadedAssets.push(await uploadProjectImage(file, altText));
+  }
+
+  return uploadedAssets;
+}
+
 function getImageUrl(project: AdminProject) {
-  const asset = project.primary_asset;
+  const asset = project.images?.[0] ?? project.primary_asset;
 
   if (!asset) {
     return project.image ?? "";
   }
 
+  return getAssetUrl(asset);
+}
+
+function getAssetUrl(asset: ProjectAsset) {
   return asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url;
+}
+
+function getProjectImages(project: AdminProject) {
+  if (project.images?.length) {
+    return project.images;
+  }
+
+  return project.primary_asset ? [project.primary_asset] : [];
+}
+
+function AdminField({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={cn("grid gap-1.5 text-sm font-medium", className)}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
 }
 
 export function ProjectManager({ initialProjects, source }: ProjectManagerProps) {
@@ -133,7 +173,9 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
-    const file = form.get("image");
+    const files = form
+      .getAll("images")
+      .filter((file): file is File => file instanceof File && file.size > 0);
     const title = String(form.get("title") ?? "").trim();
     const altText = String(form.get("image_alt_text") ?? "").trim();
 
@@ -141,14 +183,14 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
     setBusyId("new");
 
     try {
-      let primaryAsset: ProjectAsset | null = null;
+      let uploadedAssets: ProjectAsset[] = [];
 
-      if (file instanceof File && file.size > 0) {
+      if (files.length > 0) {
         if (!altText) {
-          throw new Error("Image alt text is required when uploading a project image.");
+          throw new Error("Image alt text is required when uploading project images.");
         }
 
-        primaryAsset = await uploadProjectImage(file, altText);
+        uploadedAssets = await uploadProjectImages(files, altText);
       }
 
       const response = await fetch("/api/admin/projects", {
@@ -160,7 +202,8 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
           description: String(form.get("description") ?? ""),
           category: String(form.get("category") ?? ""),
           group: String(form.get("group") ?? ""),
-          primary_asset_id: primaryAsset?.id ?? null,
+          primary_asset_id: uploadedAssets[0]?.id ?? null,
+          asset_ids: uploadedAssets.map((asset) => asset.id),
           sort_order: projects.length,
           published: form.get("published") === "on",
         }),
@@ -168,7 +211,8 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
       const payload = await parseJsonResponse(response);
       const project = {
         ...payload.project,
-        primary_asset: primaryAsset,
+        primary_asset: uploadedAssets[0] ?? null,
+        images: uploadedAssets,
         editable: true,
       } as AdminProject;
 
@@ -191,39 +235,43 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
       return;
     }
 
-    const fileInput = document.getElementById(`project-image-${id}`) as HTMLInputElement | null;
+    const fileInput = document.getElementById(`project-images-${id}`) as HTMLInputElement | null;
     const altInput = document.getElementById(`project-image-alt-${id}`) as HTMLInputElement | null;
-    const file = fileInput?.files?.[0] ?? null;
+    const files = Array.from(fileInput?.files ?? []);
     const altText = altInput?.value.trim() ?? "";
 
     setBusyId(id);
     setStatus("Saving project...");
 
     try {
-      let primaryAsset = current.primary_asset ?? null;
-      let primaryAssetId = draft.primary_asset_id ?? null;
+      let projectImages = getProjectImages(current);
 
-      if (file) {
+      if (files.length > 0) {
         if (!altText) {
-          throw new Error("Image alt text is required when uploading a project image.");
+          throw new Error("Image alt text is required when uploading project images.");
         }
 
-        primaryAsset = await uploadProjectImage(file, altText);
-        primaryAssetId = primaryAsset.id;
+        const uploadedAssets = await uploadProjectImages(files, altText);
+        projectImages = [...projectImages, ...uploadedAssets];
       }
+
+      const assetIds = projectImages.map((asset) => asset.id);
+      const primaryAsset = projectImages[0] ?? null;
 
       const response = await fetch(`/api/admin/projects/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...draft,
-          primary_asset_id: primaryAssetId,
+          primary_asset_id: primaryAsset?.id ?? null,
+          asset_ids: assetIds,
         }),
       });
       const payload = await parseJsonResponse(response);
       const updatedProject = {
         ...payload.project,
         primary_asset: primaryAsset,
+        images: projectImages,
         editable: true,
       } as AdminProject;
 
@@ -276,6 +324,47 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
       setStatus("Project deleted");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to delete project.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function removeProjectImage(project: AdminProject, assetId: string) {
+    if (!project.editable) {
+      setStatus("Default placeholder project images cannot be edited directly.");
+      return;
+    }
+
+    const remainingImages = getProjectImages(project).filter((asset) => asset.id !== assetId);
+
+    setBusyId(project.id);
+    setStatus("Removing project image...");
+
+    try {
+      const response = await fetch(`/api/admin/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          primary_asset_id: remainingImages[0]?.id ?? null,
+          asset_ids: remainingImages.map((asset) => asset.id),
+        }),
+      });
+      const payload = await parseJsonResponse(response);
+      const updatedProject = {
+        ...project,
+        ...payload.project,
+        primary_asset: remainingImages[0] ?? null,
+        images: remainingImages,
+        editable: true,
+      } as AdminProject;
+
+      setProjects((currentProjects) =>
+        currentProjects.map((item) => (item.id === project.id ? updatedProject : item))
+      );
+      setDrafts((currentDrafts) => ({ ...currentDrafts, [project.id]: toDraft(updatedProject) }));
+      setStatus("Project image removed");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to remove project image.");
     } finally {
       setBusyId(null);
     }
@@ -371,26 +460,38 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
   return (
     <div className="space-y-6">
       <form onSubmit={createProject} className="grid gap-3 rounded-lg border p-4 md:grid-cols-2">
-        <Input name="title" placeholder="Title (ex. Narra Dining Table)" required />
-        <Input name="slug" placeholder="Slug (ex. narra-dining-table)" required />
-        <Input name="category" placeholder="Category (ex. Dining Room)" required />
-        <Input
-          name="group"
-          list="project-group-options"
-          placeholder="Group (ex. Products, Showroom, Custom Builds)"
-          required
-        />
-        <Input
-          name="image"
-          type="file"
-          accept={imageTypes}
-          aria-label="Project image upload"
-          className="md:col-span-1"
-        />
-        <Input
-          name="image_alt_text"
-          placeholder="Image alt text (ex. Narra dining table in a Cebu showroom)"
-        />
+        <AdminField label="Project title">
+          <Input name="title" placeholder="Title (ex. Narra Dining Table)" required />
+        </AdminField>
+        <AdminField label="Project slug">
+          <Input name="slug" placeholder="Slug (ex. narra-dining-table)" required />
+        </AdminField>
+        <AdminField label="Project category">
+          <Input name="category" placeholder="Category (ex. Dining Room)" required />
+        </AdminField>
+        <AdminField label="Project group">
+          <Input
+            name="group"
+            list="project-group-options"
+            placeholder="Group (ex. Products, Showroom, Custom Builds)"
+            required
+          />
+        </AdminField>
+        <AdminField label="Project image upload">
+          <Input
+            name="images"
+            type="file"
+            accept={imageTypes}
+            multiple
+            aria-label="Project image upload"
+          />
+        </AdminField>
+        <AdminField label="Shared image alt text">
+          <Input
+            name="image_alt_text"
+            placeholder="Image alt text (ex. Narra dining table in a Cebu showroom)"
+          />
+        </AdminField>
         <datalist id="project-group-options">
           {groupOptions.map((group) => (
             <option key={group} value={group} />
@@ -400,12 +501,14 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
           <input name="published" type="checkbox" defaultChecked />
           Show in Projects section
         </label>
-        <textarea
-          name="description"
-          placeholder="Description (ex. Solid wood table with hand-finished edges.)"
-          required
-          className="min-h-24 rounded-md border bg-transparent px-3 py-2 text-sm md:col-span-2"
-        />
+        <AdminField label="Project description" className="md:col-span-2">
+          <textarea
+            name="description"
+            placeholder="Description (ex. Solid wood table with hand-finished edges.)"
+            required
+            className="min-h-24 rounded-md border bg-transparent px-3 py-2 text-sm"
+          />
+        </AdminField>
         <div className="flex flex-wrap items-center gap-3 md:col-span-2">
           <Button type="submit" disabled={busyId === "new"}>
             <ImagePlus />
@@ -423,6 +526,7 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
           {projects.map((project) => {
             const draft = drafts[project.id] ?? toDraft(project);
             const imageUrl = getImageUrl(project);
+            const projectImages = getProjectImages(project);
             const isDragging = draggedId === project.id;
             const isDragTarget = dragOverId === project.id && draggedId !== project.id;
 
@@ -467,19 +571,52 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
                   <GripVertical className="size-4" />
                 </button>
 
-                <div className="h-28 overflow-hidden rounded-md border bg-gray-100 dark:bg-gray-800">
-                  {imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={imageUrl}
-                      alt={project.primary_asset?.alt_text ?? project.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-gray-500">
-                      No image attached
+                <div className="space-y-2">
+                  <div className="h-28 overflow-hidden rounded-md border bg-gray-100 dark:bg-gray-800">
+                    {imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imageUrl}
+                        alt={projectImages[0]?.alt_text ?? project.primary_asset?.alt_text ?? project.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-gray-500">
+                        No image attached
+                      </div>
+                    )}
+                  </div>
+                  {projectImages.length ? (
+                    <div className="grid grid-cols-3 gap-2" aria-label={`${project.title} images`}>
+                      {projectImages.map((asset, index) => (
+                        <div
+                          key={asset.id}
+                          className="group relative aspect-square overflow-hidden rounded-md border bg-gray-100 dark:bg-gray-800"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={getAssetUrl(asset)}
+                            alt={asset.alt_text}
+                            className="h-full w-full object-cover"
+                          />
+                          <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                            {index + 1}
+                          </span>
+                          {project.editable ? (
+                            <button
+                              type="button"
+                              onClick={() => removeProjectImage(project, asset.id)}
+                              disabled={busyId === project.id}
+                              className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-white/90 text-gray-800 opacity-0 shadow transition group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
+                              aria-label={`Remove image ${index + 1} from ${project.title}`}
+                            >
+                              <Trash2 className="size-3" />
+                            </button>
+                          ) : null}
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
@@ -511,10 +648,11 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
                     disabled={!project.editable}
                   />
                   <Input
-                    id={`project-image-${project.id}`}
+                    id={`project-images-${project.id}`}
                     type="file"
                     accept={imageTypes}
-                    aria-label={`Upload image for ${project.title}`}
+                    multiple
+                    aria-label={`Upload images for ${project.title}`}
                     disabled={!project.editable}
                   />
                   <Input

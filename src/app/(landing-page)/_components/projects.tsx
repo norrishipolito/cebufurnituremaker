@@ -19,7 +19,13 @@ function toGroupLabel(group: string) {
 }
 
 interface PublicProjectRow {
+  slug: string;
   image?: string;
+  images?: {
+    id?: string;
+    url: string;
+    alt: string;
+  }[];
   title: string;
   description: string;
   category: string;
@@ -33,16 +39,29 @@ interface PublicProjectRow {
 
 export async function Projects() {
   const { projects } = await getPublicProjects();
-  const mappedProjects = (projects as PublicProjectRow[]).map((project) => ({
-    image: project.primary_asset?.blob_pathname
+  const mappedProjects = (projects as PublicProjectRow[]).map((project) => {
+    const primaryImage = project.primary_asset?.blob_pathname
       ? `/api/blob/${project.primary_asset.blob_pathname}`
-      : project.primary_asset?.blob_url ?? project.image ?? "",
-    title: project.title,
-    description: project.description,
-    category: project.category,
-    group: project.group ?? "products",
-    groupLabel: toGroupLabel(project.group ?? "products"),
-  }));
+      : project.primary_asset?.blob_url ?? project.image ?? "";
+    const images =
+      project.images?.length
+        ? project.images
+        : primaryImage
+          ? [{ url: primaryImage, alt: project.primary_asset?.alt_text ?? project.title }]
+          : [];
+
+    return {
+      slug: project.slug,
+      image: primaryImage || images[0]?.url || "",
+      imageAlt: images[0]?.alt ?? project.title,
+      images,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      group: project.group ?? "products",
+      groupLabel: toGroupLabel(project.group ?? "products"),
+    };
+  });
 
   return (
     <section id="projects" className="py-12 px-4 sm:py-16 sm:px-6 md:py-20 lg:py-24 lg:px-8 bg-gray-50 dark:bg-gray-900">

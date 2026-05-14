@@ -424,7 +424,7 @@ Content editor field expectations:
 
 - Hero: heading, emphasized heading, tagline, background image URL, background alt text, and editable footer feature rows.
 - About: title, description, showcase title, showcase image URL, showcase image alt text, and showcase description.
-- Contact: title, description, email, phone, and address.
+- Contact: title, description, email, email card description, project inquiry card title/value/description, phone, phone card description, address, address card description, hours title, and workshop hours.
 - Footer: brand description, editable Facebook/Instagram/Twitter social URLs, and editable footer columns/links.
 - Navigation is fixed site structure and should not be exposed in the admin content editor or editable content API.
 - Content sections are expandable/collapsible and should be collapsed by default when the editor page loads.
@@ -458,6 +458,7 @@ Project CRUD rules:
 - The project visibility checkbox should be labeled `Show in Projects section` and should write to `projects.published`.
 - The public Projects component should show saved project groups as tabs. Editors should use the saved group tab to review newly added public projects.
 - Project create/edit forms must include an image upload input and image alt text input. The UI uploads the image through `POST /api/admin/assets/upload` and saves the returned asset ID as `projects.primary_asset_id`.
+- Project create/edit forms support selecting multiple safe image files at once. Uploaded images are attached to the saved project through `project_assets`, shown as thumbnail previews in the admin list, and can be detached from the project without deleting the media asset.
 - Uploaded project images must be loaded by public project queries with nested `primary_asset` data so saved images appear on the landing page.
 - Editors must not type numeric sort values. Project order is changed by dragging the project handles in the saved project list, with a visible drag state and live list adjustment, then persisting `sort_order` through the project update endpoint.
 - The delete button must call `DELETE /api/admin/projects/[id]`, remove the row from the admin list, and remove the project from public output. Hiding/unpublishing is not a substitute for deletion.

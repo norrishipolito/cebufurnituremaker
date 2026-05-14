@@ -41,8 +41,16 @@ interface ContactContent {
   title: string;
   description: string;
   email: string;
+  emailDescription: string;
+  projectInquiryLabel: string;
+  projectInquiryValue: string;
+  projectInquiryDescription: string;
   phone: string;
+  phoneDescription: string;
   address: string;
+  addressDescription: string;
+  hoursTitle: string;
+  hours: string;
 }
 
 interface FooterContent {
@@ -476,6 +484,15 @@ export function ContentSectionEditor({
               }
             />
           </Field>
+          <Field label="Contact description" className="md:col-span-2">
+            <Textarea
+              value={contact.description}
+              placeholder="Contact description (ex. Share your project details and we will help with the next step.)"
+              onChange={(value) =>
+                setContact((current) => ({ ...current, description: value }))
+              }
+            />
+          </Field>
           <Field label="Contact email">
             <Input
               type="email"
@@ -486,12 +503,73 @@ export function ContentSectionEditor({
               }
             />
           </Field>
+          <Field label="Email card description">
+            <Input
+              value={contact.emailDescription}
+              placeholder="Email card description (ex. Send project notes, dimensions, or inspiration photos.)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  emailDescription: event.target.value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Project inquiry card title">
+            <Input
+              value={contact.projectInquiryLabel}
+              placeholder="Project inquiry card title (ex. Project inquiries)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  projectInquiryLabel: event.target.value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Project inquiry card value">
+            <Input
+              value={contact.projectInquiryValue}
+              placeholder="Project inquiry card value (ex. Custom furniture, repairs, and consultations)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  projectInquiryValue: event.target.value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Project inquiry card description" className="md:col-span-2">
+            <Textarea
+              value={contact.projectInquiryDescription}
+              placeholder="Project inquiry card description (ex. Tell us what you are planning and we will guide the next step.)"
+              onChange={(value) =>
+                setContact((current) => ({
+                  ...current,
+                  projectInquiryDescription: value,
+                }))
+              }
+              rows={2}
+            />
+          </Field>
           <Field label="Contact phone">
             <Input
               value={contact.phone}
               placeholder="Phone (ex. +63 32 123 4567)"
               onChange={(event) =>
                 setContact((current) => ({ ...current, phone: event.target.value }))
+              }
+            />
+          </Field>
+          <Field label="Phone card description">
+            <Input
+              value={contact.phoneDescription}
+              placeholder="Phone card description (ex. Call us for quick timeline questions.)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  phoneDescription: event.target.value,
+                }))
               }
             />
           </Field>
@@ -507,16 +585,43 @@ export function ContentSectionEditor({
               }
             />
           </Field>
+          <Field label="Address card description">
+            <Input
+              value={contact.addressDescription}
+              placeholder="Address card description (ex. Visit or coordinate a workshop consultation in Cebu.)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  addressDescription: event.target.value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Hours card title">
+            <Input
+              value={contact.hoursTitle}
+              placeholder="Hours card title (ex. Workshop hours)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  hoursTitle: event.target.value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Workshop hours">
+            <Input
+              value={contact.hours}
+              placeholder="Workshop hours (ex. Monday to Saturday, 9:00 AM to 6:00 PM)"
+              onChange={(event) =>
+                setContact((current) => ({
+                  ...current,
+                  hours: event.target.value,
+                }))
+              }
+            />
+          </Field>
         </div>
-        <Field label="Contact description">
-          <Textarea
-            value={contact.description}
-            placeholder="Contact description (ex. Invite visitors to share their project details.)"
-            onChange={(value) =>
-              setContact((current) => ({ ...current, description: value }))
-            }
-          />
-        </Field>
       </SectionCard>
 
       <SectionCard

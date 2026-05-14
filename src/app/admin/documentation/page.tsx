@@ -188,7 +188,7 @@ const pageDocs: PageDoc[] = [
     workflow: [
       "Open `/admin/projects`.",
       "Fill the project form.",
-      "Upload the project image and add alt text.",
+      "Upload one or more project images and add alt text.",
       "Keep Show in Projects section checked if it should appear publicly.",
       "Click Create Project.",
       "Drag saved project handles to reorder the public list.",
@@ -642,7 +642,7 @@ export default async function AdminDocumentationPage() {
                   </div>
                   <div className="flex items-center gap-2 rounded-md border p-3 dark:border-gray-800">
                     <Upload className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">Project image upload + alt text</span>
+                      <span className="text-sm">Project image uploads + alt text</span>
                   </div>
                   <div className="flex items-center gap-2 rounded-md border p-3 dark:border-gray-800">
                     <ListChecks className="h-4 w-4 text-gray-500" />

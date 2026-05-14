@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Contact feature is a contact form section that allows visitors to get in touch with Cebu Furniture Maker. It includes a compact contact form and contact information display in a two-column layout. The form is designed to fit within the section height while maintaining usability. The implementation follows the component architecture rules, with the main component in `_components/` and sub-components in `features/`.
+The Contact feature is a contact form section that allows visitors to get in touch with Cebu Furniture Maker. It uses a shadcnblocks-style two-column layout with editable contact information cards on the left and a labeled inquiry form on the right. The form includes an auto-growing message textarea. The implementation follows the component architecture rules, with the main component in `_components/` and sub-components in `features/`.
 
 ## Architecture
 
@@ -34,6 +34,7 @@ src/
 - Imports and composes sub-components
 - Provides section container with full-height layout
 - Manages two-column responsive grid layout
+- Loads editable contact content through the site content helper with defaults when the database is empty
 
 **Key Features**:
 - Full-height section (`min-h-screen`)
@@ -118,7 +119,7 @@ export function Contact() {
    - Catalog Items
    - Design Consultation
    - Other
-5. **Message** (required) - Text input
+5. **Message** (required) - Auto-growing textarea
 
 **Layout**:
 - Grid layout: `grid-cols-1 sm:grid-cols-2` for responsive fields
@@ -138,15 +139,17 @@ export function Contact() {
 **Purpose**: Displays contact information with icons.
 
 **Features**:
-- Three contact information items
+- Editable contact information cards
 - Icon-based layout
 - Animated entrance with staggered delays
 - Dark mode support
 
 **Contact Items**:
-1. **Email**: `info@cebufurnituremaker.com` (Mail icon)
-2. **Phone**: `+63 32 123 4567` (Phone icon)
-3. **Address**: `Cebu City, Philippines` (MapPin icon)
+1. **Email**: editable value and card description (Mail icon)
+2. **Project inquiries**: editable title, value, and description (MessageCircle icon)
+3. **Phone**: editable value and card description (Phone icon)
+4. **Address**: editable value and card description (MapPin icon)
+5. **Workshop hours**: editable title and hours text (Clock icon)
 
 **Layout**:
 - Vertical stack: `space-y-6`

@@ -188,7 +188,16 @@ test.describe.serial("admin CRUD APIs", () => {
     await loginAsAdmin(page);
     await page.goto("/admin/projects");
 
-    await expect(page.getByLabel("Project image upload")).toBeVisible();
+    await expect(page.getByLabel("Project title").first()).toBeVisible();
+    await expect(page.getByLabel("Project slug").first()).toBeVisible();
+    await expect(page.getByLabel("Project category").first()).toBeVisible();
+    await expect(page.getByLabel("Project group").first()).toBeVisible();
+    await expect(page.getByLabel("Project description").first()).toBeVisible();
+    const imageUpload = page.getByLabel("Project image upload");
+    await expect(imageUpload).toBeVisible();
+    await expect(imageUpload).toHaveAttribute("multiple", "");
+    await expect(page.getByLabel("Shared image alt text")).toBeVisible();
+    await expect(page.getByLabel(/^Upload images for /).first()).toBeVisible();
     await expect(
       page.getByPlaceholder("Image alt text (ex. Narra dining table in a Cebu showroom)")
     ).toBeVisible();

@@ -1,14 +1,25 @@
 # Repository Instructions
 
-Before implementing features in this repository, read and follow:
+Before every new chat, prompt, or implementation task in this repository, read and follow the repository documentation.
 
-- `docs/00-application-architecture.md`
-- `docs/01-component-architecture-rules.md`
-- `docs/02-feature-implementation-rules.md`
-- The relevant feature plan in `docs/feature/`
+Required reading order:
+
+1. `AGENTS.md`
+2. Every Markdown file in `docs/rules/`
+3. Every Markdown file directly under `docs/`
+4. The relevant feature plan in `docs/feature/`
+5. If the scope is broad or unclear, every Markdown file in `docs/feature/`
+
+Modern agent setup:
+
+- `AGENTS.md` is the cross-agent entrypoint.
+- `docs/rules/` contains durable project rules.
+- `.cursor/rules/always-read-docs.mdc` mirrors this startup rule for Cursor Agent.
+- Keep these files synchronized whenever standing rules change.
 
 Important standing rules:
 
+- Keep documentation synchronized with implementation changes.
 - Keep feature plans updated as implementation changes.
 - Editable content must have default fallbacks for an empty database.
 - Admin content editing must use friendly form controls, not raw JSON.

@@ -4,6 +4,8 @@
 
 This file compacts the implementation decisions, fixes, and standing rules agreed during the editable-admin buildout. Use it as a quick memory file before planning or implementing future features.
 
+Before using this summary for implementation, read `AGENTS.md` and every file in `docs/rules/`.
+
 ## Current Stack
 
 - App: Next.js App Router, React, TypeScript, Tailwind CSS.
@@ -198,6 +200,7 @@ pnpm exec playwright test tests/e2e/admin-auth.spec.ts --project=chromium
 
 When implementation details change, update:
 
+- `docs/rules/` when standing rules change
 - `docs/02-feature-implementation-rules.md`
 - the relevant file in `docs/feature/`
 - this summary when the change is broad enough to affect future work

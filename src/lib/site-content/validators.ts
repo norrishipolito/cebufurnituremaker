@@ -23,6 +23,7 @@ export const projectInputSchema = z.object({
   category: z.string().min(2).max(80),
   group: projectGroupSchema,
   primary_asset_id: z.string().uuid().nullable().optional(),
+  asset_ids: z.array(z.string().uuid()).max(12).optional(),
   sort_order: z.coerce.number().int().min(0).default(0),
   published: z.coerce.boolean().default(true),
 });

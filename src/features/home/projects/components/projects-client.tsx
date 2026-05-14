@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsHeader } from "./projects-header";
 import { ProjectsTabs } from "./projects-tabs";
+import { ProjectDetailDialog } from "./project-detail-dialog";
 import type { Product } from "./projects-data";
 
 export function ProjectsClient({ products }: { products: Product[] }) {
@@ -19,6 +20,7 @@ export function ProjectsClient({ products }: { products: Product[] }) {
     return [...uniqueGroups].map(([value, label]) => ({ value, label }));
   }, [products]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Product | null>(null);
   const currentTab =
     activeTab && groups.some((group) => group.value === activeTab)
       ? activeTab
@@ -38,7 +40,18 @@ export function ProjectsClient({ products }: { products: Product[] }) {
         groups={groups}
         onTabChange={setActiveTab}
       />
-      <ProjectsGrid products={filteredProducts} />
+      <ProjectsGrid
+        products={filteredProducts}
+        onProjectOpen={setSelectedProject}
+      />
+      <ProjectDetailDialog
+        project={selectedProject}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedProject(null);
+          }
+        }}
+      />
     </>
   );
 }

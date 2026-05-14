@@ -28,6 +28,8 @@ For every feature:
 5. Add or update Playwright tests for the user-facing behavior.
 6. Run verification before considering the feature complete.
 
+Before every implementation task, also read and follow the standing rules in `docs/rules/`.
+
 For every user-reported bug:
 
 1. Reproduce or identify the failing behavior.

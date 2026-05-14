@@ -5,6 +5,10 @@ export interface DefaultProject {
   id: string;
   slug: string;
   image: string;
+  images?: {
+    url: string;
+    alt: string;
+  }[];
   title: string;
   description: string;
   category: string;
@@ -95,6 +99,20 @@ export const defaultSiteContent = {
       slug: "modern-sofa-set",
       image:
         "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop",
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&h=900&fit=crop",
+          alt: "Modern sofa set with light upholstery in a bright living room",
+        },
+        {
+          url: "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=1200&h=900&fit=crop",
+          alt: "Wood coffee table styled beside a modern sofa set",
+        },
+        {
+          url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=900&fit=crop",
+          alt: "Coordinated living room furniture with handcrafted wood details",
+        },
+      ],
       title: "Modern Sofa Set",
       description:
         "Elegant three-piece sofa set crafted from premium hardwood with luxurious fabric upholstery. Perfect for modern living spaces.",
@@ -209,8 +227,17 @@ export const defaultSiteContent = {
     description:
       "Have a project in mind? Let's discuss how we can bring your furniture vision to life.",
     email: "info@cebufurnituremaker.com",
+    emailDescription: "Send project notes, dimensions, or inspiration photos.",
+    projectInquiryLabel: "Project inquiries",
+    projectInquiryValue: "Custom furniture, catalog pieces, and consultations",
+    projectInquiryDescription:
+      "Tell us what you are planning and we will guide the next step.",
     phone: "+63 32 123 4567",
+    phoneDescription: "Call us for quick questions about timelines or availability.",
     address: "Cebu City, Philippines",
+    addressDescription: "Visit or coordinate a workshop consultation in Cebu.",
+    hoursTitle: "Workshop hours",
+    hours: "Monday to Saturday, 9:00 AM to 6:00 PM",
   },
   navigation: [
     { label: "Home", href: "#hero", id: "hero" },

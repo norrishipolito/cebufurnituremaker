@@ -2,22 +2,31 @@
 
 ## Overview
 
-The Projects feature showcases Cebu Furniture Maker products in a responsive, tab-filtered gallery. It displays image cards for product sets, showroom collections, and fabrication site suites. The main page-level component lives in `app/(landing-page)/_components`, while reusable sub-components and default product data live under `features/home/projects/components`.
+The Projects feature showcases Cebu Furniture Maker products in a responsive, tab-filtered gallery. It displays clickable image cards for product sets, showroom collections, and fabrication site suites. Each project supports a primary image plus an ordered image carousel, a public modal overview, and a dedicated detail page.
 
-This feature is currently static, but it is one of the primary surfaces that will move to database-backed editable content in the admin implementation.
+The public gallery reads database-backed editable projects first and falls back to `src/lib/default-site-content.ts` when the database is empty or unavailable.
 
 ## Architecture
 
 ```txt
 src/
 |-- app/
-|   `-- (landing-page)/
-|       `-- _components/
-|           `-- projects.tsx
+|   |-- (landing-page)/
+|   |   `-- _components/
+|   |       `-- projects.tsx
+|   `-- projects/
+|       `-- [slug]/
+|           `-- page.tsx
+|-- components/
+|   `-- shadcn-space/
+|       `-- blocks/
+|           `-- cta-01/
+|               `-- cta.tsx
 `-- features/
     `-- home/
         `-- projects/
             `-- components/
+                |-- project-detail-dialog.tsx
                 |-- projects-header.tsx
                 |-- projects-tabs.tsx
                 |-- projects-grid.tsx
@@ -34,12 +43,12 @@ Location: `src/app/(landing-page)/_components/projects.tsx`
 
 Responsibilities:
 
-- Owns the active tab state with `useState<ProductType>`.
-- Filters `furnitureProducts` with `useMemo`.
-- Composes `ProjectsHeader`, `ProjectsTabs`, and `ProjectsGrid`.
+- Loads published projects through `getPublicProjects`.
+- Normalizes database rows and fallback projects into the shared `Product` UI shape.
+- Composes `ProjectsClient`.
 - Adds the `id="projects"` section anchor used by navigation.
 
-Current default tab: `Set`.
+Current default tab: first available project group.
 
 ### `projects-tabs.tsx`
 
@@ -47,12 +56,12 @@ Location: `src/features/home/projects/components/projects-tabs.tsx`
 
 Responsibilities:
 
-- Renders the three gallery tabs with the shared `Tabs` UI component.
+- Renders the available gallery groups with the shared `Tabs` UI component.
 - Receives `activeTab` and `onTabChange` from the page-level component.
-- Maps display labels to the current data types:
-  - `Set` -> Products
-  - `Collection` -> Showroom
-  - `Suites` -> Fabrication Site
+- Maps database group values to readable display labels:
+  - `products` -> Products
+  - `showroom` -> Showroom
+  - `fabrication_site` -> Fabrication Site
 
 ### `projects-grid.tsx`
 
@@ -63,6 +72,7 @@ Responsibilities:
 - Renders the responsive card grid.
 - Shows an empty state when no products exist for the selected tab.
 - Passes each product into `ProjectCard`.
+- Opens the project detail modal when a card is clicked.
 
 Grid layout:
 
@@ -76,9 +86,30 @@ Location: `src/features/home/projects/components/project-card.tsx`
 
 Responsibilities:
 
-- Renders an individual product image, title, description, and category.
+- Renders an individual clickable product image card with title, description, and category.
 - Uses Next.js image optimization.
 - Applies hover and entrance animation effects.
+
+### `project-detail-dialog.tsx`
+
+Location: `src/features/home/projects/components/project-detail-dialog.tsx`
+
+Responsibilities:
+
+- Renders the project popout/modal through Radix Dialog.
+- Displays the project image carousel.
+- Shows thumbnail boxes that jump directly to a selected image.
+- Shows project overview, category, and project type in an aligned details panel.
+- Links to `/projects/[slug]` through the `View More Details` action.
+
+### `app/projects/[slug]/page.tsx`
+
+Responsibilities:
+
+- Reads a single published project by slug through `getPublicProjectBySlug`.
+- Falls back to the matching default project when the database is unavailable.
+- Shows all project images, overview/details, category, and project type.
+- Renders the `cta-01` shadcn-space style call-to-action before the shared site footer.
 
 ### `projects-data.ts`
 
@@ -90,17 +121,22 @@ Responsibilities:
 - Exports the `Product` interface.
 - Exports the current default `furnitureProducts` list.
 
-Current types:
+Current UI type:
 
 ```ts
-export type ProductType = "Set" | "Collection" | "Suites";
-
 export interface Product {
+  slug: string;
   image: string;
+  imageAlt: string;
+  images: {
+    url: string;
+    alt: string;
+  }[];
   title: string;
   description: string;
   category: string;
-  type: ProductType;
+  group: string;
+  groupLabel: string;
 }
 ```
 
@@ -112,15 +148,15 @@ Current default groups:
 
 ## Editable Admin Impact
 
-When the editable admin is implemented, the current static product data should become the runtime fallback content for an empty database.
-
-Planned behavior:
+Implemented behavior:
 
 - Public reads query Supabase first.
 - If Supabase has no published project rows, the public gallery uses the default products from `src/lib/default-site-content.ts`.
-- Admin project forms prefill from database rows when they exist.
-- If the database is empty, admin forms can seed or upsert content based on the defaults.
+- Admin project forms show database rows when they exist and read-only default rows while the database is empty.
 - Uploaded project images are stored in Vercel Blob and referenced by asset records.
+- Multiple project images are attached through the existing `project_assets` join table.
+- Project create/edit forms accept multiple image files and an editor-provided alt text through labeled admin controls.
+- Editors can remove attached project images from the project row without deleting the underlying asset record.
 - Public project tabs map database groups to stable admin-friendly values:
   - `products`
   - `showroom`
@@ -132,6 +168,7 @@ The implementation should keep a compatibility adapter so the public UI can keep
 
 - `framer-motion` for animations.
 - `next/image` for optimized image rendering.
+- `@radix-ui/react-dialog` for the project overview modal.
 - `@/components/ui/tabs` for the tab control.
 - Tailwind CSS for layout and styling.
 
