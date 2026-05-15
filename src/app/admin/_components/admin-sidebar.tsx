@@ -11,7 +11,7 @@ import {
 import type { AdminProfile } from "@/lib/auth/roles";
 import { canManageSettings, canManageUsers } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
-import { AdminNavLink } from "./admin-navigation-progress";
+import { AdminNavLink } from "./admin-navigation";
 import { AdminRoutePrefetcher } from "./admin-route-prefetcher";
 
 const navItems = [

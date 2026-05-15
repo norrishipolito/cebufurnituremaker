@@ -54,11 +54,7 @@ function shouldIgnoreNavigationClick(
   );
 }
 
-export function AdminNavigationProgressProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function AdminNavigationProvider({ children }: { children: ReactNode }) {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   const value = useMemo(
@@ -71,16 +67,6 @@ export function AdminNavigationProgressProvider({
 
   return (
     <AdminNavigationContext.Provider value={value}>
-      {pendingHref ? (
-        <div
-          role="status"
-          aria-label="Loading admin page"
-          className="fixed inset-x-0 top-0 z-50 h-1 overflow-hidden bg-gray-200/80 dark:bg-gray-800/80"
-        >
-          <span className="block h-full w-full animate-pulse bg-gray-950 dark:bg-white" />
-          <span className="sr-only">Loading admin page</span>
-        </div>
-      ) : null}
       {children}
     </AdminNavigationContext.Provider>
   );

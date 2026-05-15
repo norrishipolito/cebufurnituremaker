@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import type { AdminProfile } from "@/lib/auth/roles";
 import { AdminHeader } from "./admin-header";
-import { AdminNavigationProgressProvider } from "./admin-navigation-progress";
+import { AdminNavigationProvider } from "./admin-navigation";
 import { AdminSidebar } from "./admin-sidebar";
 
 export function AdminChrome({
@@ -21,7 +21,7 @@ export function AdminChrome({
   }
 
   return (
-    <AdminNavigationProgressProvider key={pathname}>
+    <AdminNavigationProvider key={pathname}>
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[240px_1fr]">
         <AdminSidebar className="hidden lg:block" profile={profile} />
         <div className="min-w-0">
@@ -29,6 +29,6 @@ export function AdminChrome({
           {children}
         </div>
       </div>
-    </AdminNavigationProgressProvider>
+    </AdminNavigationProvider>
   );
 }

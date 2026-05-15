@@ -28,7 +28,7 @@ test("signed-in admin can sign out from the admin header", async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/login/);
 });
 
-test("admin navigation shows pending feedback while a page is loading", async ({
+test("admin navigation keeps clicked links pending without a global loader", async ({
   page,
   isMobile,
 }) => {
@@ -49,15 +49,20 @@ test("admin navigation shows pending feedback while a page is loading", async ({
 
   await loginAsAdmin(page);
 
+  const contentLink = page
+    .locator("aside")
+    .first()
+    .getByRole("link", { name: "Content" });
   const navigation = page
     .locator("aside")
     .first()
     .getByRole("link", { name: "Content" })
     .click();
 
+  await expect(contentLink).toHaveAttribute("aria-busy", "true");
   await expect(
     page.getByRole("status", { name: "Loading admin page" })
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect.poll(() => releaseRoutes.length).toBeGreaterThan(0);
 
   shouldDelayContent = false;
@@ -67,6 +72,7 @@ test("admin navigation shows pending feedback while a page is loading", async ({
 
   await navigation;
   await expect(page).toHaveURL(/\/admin\/content/);
+  await expect(contentLink).not.toHaveAttribute("aria-busy", "true");
   await expect(
     page.getByRole("status", { name: "Loading admin page" })
   ).toHaveCount(0);
