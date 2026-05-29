@@ -123,7 +123,7 @@ If a feature is documentation-only, tests are not required, but the doc change s
   - `admin`
   - `maintainer`
 - Store flexible section content as `jsonb` internally when useful, but never make editors write JSON in the admin UI.
-- Project groups are user-editable text values and should not be constrained to the original three placeholder groups.
+- Project grouping/type controls are retired from the editor and public UI. Keep the existing `projects.group` database column only as an internal compatibility field and default new editor writes to `projects`.
 - Enable Row Level Security on public schema tables.
 - Route handlers must still enforce authorization server-side even when RLS exists.
 - Publish/unpublish controls are for public visibility only. If an admin resource supports `DELETE`, the admin UI must include an explicit delete action that removes the record instead of merely hiding it.

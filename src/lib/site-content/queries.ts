@@ -152,8 +152,12 @@ export async function getPublicTestimonials() {
   }
 
   const data = await db
-    .select()
+    .select({
+      testimonial: testimonials,
+      avatar: assets,
+    })
     .from(testimonials)
+    .leftJoin(assets, eq(testimonials.avatar_asset_id, assets.id))
     .where(eq(testimonials.published, true))
     .orderBy(asc(testimonials.sort_order));
 
@@ -164,5 +168,11 @@ export async function getPublicTestimonials() {
     };
   }
 
-  return { testimonials: data, source: "database" as const };
+  return {
+    testimonials: data.map((row) => ({
+      ...row.testimonial,
+      avatar: row.avatar,
+    })),
+    source: "database" as const,
+  };
 }

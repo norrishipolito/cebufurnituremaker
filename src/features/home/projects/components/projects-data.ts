@@ -9,8 +9,8 @@ export interface Product {
   title: string;
   description: string;
   category: string;
-  group: string;
-  groupLabel: string;
+  group?: string;
+  groupLabel?: string;
 }
 
 export const furnitureProducts: Product[] = [

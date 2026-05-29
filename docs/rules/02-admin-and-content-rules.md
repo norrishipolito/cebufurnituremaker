@@ -24,7 +24,8 @@
 ## Projects
 
 - Projects have full CRUD in the admin UI.
-- Project groups are editor-created text values, not a fixed enum.
+- Project grouping/type controls are retired from the editor and public UI; saved projects are shown together as one `Projects` collection.
+- The existing `projects.group` database column is an internal compatibility field and should default to `projects` for new editor writes.
 - Project visibility uses a checkbox labeled `Show in Projects section`.
 - Project sorting is drag-based. Do not expose numeric sort-order inputs to editors.
 - Project images are uploaded from the Projects page, not the Media page.
@@ -42,6 +43,6 @@
 ## Footer
 
 - Footer content is editable from `/admin/content`.
+- The footer content editor should group brand copy, social links, footer columns, and a compact preview into friendly form controls.
 - Footer social links are Facebook, Instagram, and Twitter only unless a future feature explicitly adds another platform.
 - Footer link columns are repeatable editor-controlled rows.
-

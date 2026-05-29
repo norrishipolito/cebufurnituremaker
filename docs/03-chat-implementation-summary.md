@@ -66,13 +66,14 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - Projects have full CRUD in the admin UI.
 - Project images are uploaded from the Projects page, not from Media.
 - Project visibility uses an editor-facing checkbox for showing in the public Projects section.
-- Project groups are editable text values. They are not limited to the original placeholder groups.
+- Project grouping/type controls are retired from the editor and public UI. Projects now render as one public `Projects` grid, while `projects.group` remains only as an internal compatibility field defaulted to `projects`.
 - Project sorting is drag-based. Do not expose numeric sort-order inputs.
 - Dragging should show a visible drag state and live list adjustment.
 
 ## Testimonials Rules
 
 - Testimonials have full CRUD in the admin UI.
+- Testimonials can upload avatar images from the testimonial editor. Public testimonials use the uploaded avatar when present and a local default avatar image when no avatar is attached.
 - Testimonial visibility uses an editor-facing checkbox for showing in the public Testimonials section.
 - Testimonial sorting is drag-based. Do not expose numeric sort-order inputs.
 - Dragging should show a visible drag state and live list adjustment.

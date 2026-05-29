@@ -21,29 +21,11 @@ interface PublicProjectDetail {
   title: string;
   description: string;
   category: string;
-  group?: string;
   primary_asset?: {
     blob_url?: string | null;
     blob_pathname?: string | null;
     alt_text?: string | null;
   } | null;
-}
-
-const groupLabels: Record<string, string> = {
-  products: "Products",
-  showroom: "Showroom",
-  fabrication_site: "Fabrication Site",
-};
-
-function toGroupLabel(group: string) {
-  return (
-    groupLabels[group] ??
-    group
-      .replace(/[_-]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (letter) => letter.toUpperCase())
-  );
 }
 
 export default async function ProjectDetailPage({
@@ -66,7 +48,6 @@ export default async function ProjectDetailPage({
       : primaryImage
         ? [{ url: primaryImage, alt: project.primary_asset?.alt_text ?? project.title }]
         : [];
-  const groupLabel = toGroupLabel(project.group ?? "products");
 
   return (
     <>
@@ -115,9 +96,11 @@ export default async function ProjectDetailPage({
                   </div>
                   <div className="rounded-md border border-gray-200 p-4 dark:border-gray-800">
                     <dt className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                      Project Type
+                      Gallery
                     </dt>
-                    <dd className="mt-1 text-sm font-medium">{groupLabel}</dd>
+                    <dd className="mt-1 text-sm font-medium">
+                      {images.length || 1} project {images.length === 1 ? "image" : "images"}
+                    </dd>
                   </div>
                 </dl>
                 <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-800">

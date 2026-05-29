@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { GripVertical, ImagePlus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,6 @@ interface ProjectDraft {
   title: string;
   description: string;
   category: string;
-  group: string;
   primary_asset_id?: string | null;
   published: boolean;
 }
@@ -44,7 +43,7 @@ interface ProjectManagerProps {
   source: "database" | "default";
 }
 
-const groupExamples = ["products", "showroom", "fabrication_site", "custom_builds"];
+const internalProjectGroup = "projects";
 const imageTypes = "image/jpeg,image/png,image/webp,image/avif";
 
 function toDraft(project: AdminProject): ProjectDraft {
@@ -53,7 +52,6 @@ function toDraft(project: AdminProject): ProjectDraft {
     title: project.title,
     description: project.description,
     category: project.category,
-    group: project.group,
     primary_asset_id: project.primary_asset_id ?? null,
     published: project.published,
   };
@@ -153,12 +151,6 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
   const dragSnapshotRef = useRef<AdminProject[] | null>(null);
   const dragDroppedRef = useRef(false);
 
-  const groupOptions = useMemo(() => {
-    const values = new Set(groupExamples);
-    projects.forEach((project) => values.add(project.group));
-    return [...values].filter(Boolean);
-  }, [projects]);
-
   function updateDraft(id: string, patch: Partial<ProjectDraft>) {
     setDrafts((current) => ({
       ...current,
@@ -201,7 +193,7 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
           title,
           description: String(form.get("description") ?? ""),
           category: String(form.get("category") ?? ""),
-          group: String(form.get("group") ?? ""),
+          group: internalProjectGroup,
           primary_asset_id: uploadedAssets[0]?.id ?? null,
           asset_ids: uploadedAssets.map((asset) => asset.id),
           sort_order: projects.length,
@@ -263,6 +255,7 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...draft,
+          group: internalProjectGroup,
           primary_asset_id: primaryAsset?.id ?? null,
           asset_ids: assetIds,
         }),
@@ -469,14 +462,6 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
         <AdminField label="Project category">
           <Input name="category" placeholder="Category (ex. Dining Room)" required />
         </AdminField>
-        <AdminField label="Project group">
-          <Input
-            name="group"
-            list="project-group-options"
-            placeholder="Group (ex. Products, Showroom, Custom Builds)"
-            required
-          />
-        </AdminField>
         <AdminField label="Project image upload">
           <Input
             name="images"
@@ -492,11 +477,6 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
             placeholder="Image alt text (ex. Narra dining table in a Cebu showroom)"
           />
         </AdminField>
-        <datalist id="project-group-options">
-          {groupOptions.map((group) => (
-            <option key={group} value={group} />
-          ))}
-        </datalist>
         <label className="flex h-9 items-center gap-2 text-sm">
           <input name="published" type="checkbox" defaultChecked />
           Show in Projects section
@@ -638,13 +618,6 @@ export function ProjectManager({ initialProjects, source }: ProjectManagerProps)
                       updateDraft(project.id, { category: event.target.value })
                     }
                     placeholder="Category (ex. Dining Room)"
-                    disabled={!project.editable}
-                  />
-                  <Input
-                    value={draft.group}
-                    list="project-group-options"
-                    onChange={(event) => updateDraft(project.id, { group: event.target.value })}
-                    placeholder="Group (ex. Products, Showroom, Custom Builds)"
                     disabled={!project.editable}
                   />
                   <Input

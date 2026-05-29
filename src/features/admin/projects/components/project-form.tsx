@@ -17,7 +17,7 @@ export function ProjectForm() {
       title: String(form.get("title") ?? ""),
       description: String(form.get("description") ?? ""),
       category: String(form.get("category") ?? ""),
-      group: String(form.get("group") ?? "products"),
+      group: "projects",
       sort_order: Number(form.get("sort_order") ?? 0),
       published: form.get("published") === "on",
     };
@@ -52,18 +52,6 @@ export function ProjectForm() {
       <Input name="slug" placeholder="Slug (ex. narra-dining-table)" required />
       <Input name="category" placeholder="Category (ex. Dining Room)" required />
       <Input name="sort_order" type="number" placeholder="Sort order (ex. 0)" defaultValue={0} />
-      <Input
-        name="group"
-        list="project-group-examples"
-        placeholder="Group (ex. Products, Showroom, Custom Builds)"
-        required
-      />
-      <datalist id="project-group-examples">
-        <option value="products" />
-        <option value="showroom" />
-        <option value="fabrication_site" />
-        <option value="custom_builds" />
-      </datalist>
       <label className="flex h-9 items-center gap-2 text-sm">
         <input name="published" type="checkbox" defaultChecked />
         Published

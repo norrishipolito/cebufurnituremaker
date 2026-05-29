@@ -45,7 +45,6 @@ test.describe.serial("admin CRUD APIs", () => {
         title: "x",
         description: "x",
         category: "x",
-        group: "x",
       },
     });
     expect(invalid.status()).toBe(400);
@@ -56,26 +55,26 @@ test.describe.serial("admin CRUD APIs", () => {
         title: `E2E Project ${unique}`,
         description: `E2E project description ${unique}`,
         category: "Testing",
-        group: "custom_builds",
         sort_order: 0,
         published: true,
       },
     });
     const createPayload = await create.json();
 
-    test.skip(
-      create.status() === 400 &&
-        String(createPayload.error ?? "").toLowerCase().includes("constraint"),
-      "Supabase projects.group still has the old fixed-group check constraint. Run the documented migration before custom-group e2e coverage."
-    );
-
     expect(create.status(), JSON.stringify(createPayload)).toBe(201);
     const payload = createPayload;
 
     try {
       await page.goto("/");
-      await page.getByRole("tab", { name: "Custom Builds" }).click();
+      await page.locator("#projects").scrollIntoViewIfNeeded();
+      await expect(page.getByRole("tab")).toHaveCount(0);
       await expect(page.getByText(`E2E Project ${unique}`)).toBeVisible();
+      await page.getByText(`E2E Project ${unique}`).click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(page.getByText("Project Type")).toHaveCount(0);
+      await page.getByRole("link", { name: /view more details/i }).click();
+      await expect(page).toHaveURL(new RegExp(`/projects/${slug}`));
+      await expect(page.getByText("Project Type")).toHaveCount(0);
 
       const duplicate = await page.request.post("/api/admin/projects", {
         data: {
@@ -83,7 +82,6 @@ test.describe.serial("admin CRUD APIs", () => {
           title: `Duplicate ${unique}`,
           description: "Duplicate project",
           category: "Testing",
-          group: "custom_builds",
           sort_order: 0,
           published: true,
         },
@@ -99,10 +97,7 @@ test.describe.serial("admin CRUD APIs", () => {
       expect(hide.ok()).toBeTruthy();
 
       await page.goto("/");
-      const customTab = page.getByRole("tab", { name: "Custom Builds" });
-      if ((await customTab.count()) > 0) {
-        await customTab.click();
-      }
+      await page.locator("#projects").scrollIntoViewIfNeeded();
       await expect(page.getByText(`E2E Project ${unique}`)).toHaveCount(0);
     } finally {
       await page.request.delete(`/api/admin/projects/${payload.project.id}`);
@@ -122,7 +117,6 @@ test.describe.serial("admin CRUD APIs", () => {
         title: "Evil Origin",
         description: "This should be rejected before validation or insert.",
         category: "Testing",
-        group: "custom_builds",
         sort_order: 0,
         published: false,
       },
@@ -152,10 +146,6 @@ test.describe.serial("admin CRUD APIs", () => {
         .getByPlaceholder("Category (ex. Dining Room)")
         .first()
         .fill("Testing");
-      await page
-        .getByPlaceholder("Group (ex. Products, Showroom, Custom Builds)")
-        .first()
-        .fill("custom_builds");
       await page
         .getByPlaceholder("Description (ex. Solid wood table with hand-finished edges.)")
         .first()
@@ -191,7 +181,8 @@ test.describe.serial("admin CRUD APIs", () => {
     await expect(page.getByLabel("Project title").first()).toBeVisible();
     await expect(page.getByLabel("Project slug").first()).toBeVisible();
     await expect(page.getByLabel("Project category").first()).toBeVisible();
-    await expect(page.getByLabel("Project group").first()).toBeVisible();
+    await expect(page.getByLabel("Project group")).toHaveCount(0);
+    await expect(page.getByPlaceholder(/Group \(ex\./)).toHaveCount(0);
     await expect(page.getByLabel("Project description").first()).toBeVisible();
     const imageUpload = page.getByLabel("Project image upload");
     await expect(imageUpload).toBeVisible();
@@ -222,10 +213,6 @@ test.describe.serial("admin CRUD APIs", () => {
       await page.getByPlaceholder("Slug (ex. narra-dining-table)").first().fill(slug);
       await page.getByPlaceholder("Category (ex. Dining Room)").first().fill("Testing");
       await page
-        .getByPlaceholder("Group (ex. Products, Showroom, Custom Builds)")
-        .first()
-        .fill("custom_builds");
-      await page
         .getByPlaceholder("Description (ex. Solid wood table with hand-finished edges.)")
         .first()
         .fill(`Public visibility project ${unique}`);
@@ -235,7 +222,7 @@ test.describe.serial("admin CRUD APIs", () => {
 
       await page.goto("/");
       await page.locator("#projects").scrollIntoViewIfNeeded();
-      await page.getByRole("tab", { name: "Custom Builds" }).click();
+      await expect(page.getByRole("tab")).toHaveCount(0);
       await expect(page.getByText(title)).toBeVisible();
 
       await page.goto("/admin/projects");
@@ -247,10 +234,6 @@ test.describe.serial("admin CRUD APIs", () => {
 
       await page.goto("/");
       await page.locator("#projects").scrollIntoViewIfNeeded();
-      const customTab = page.getByRole("tab", { name: "Custom Builds" });
-      if ((await customTab.count()) > 0) {
-        await customTab.click();
-      }
       await expect(page.getByText(title)).toHaveCount(0);
     } finally {
       const response = await page.request.get("/api/admin/projects");
@@ -281,10 +264,6 @@ test.describe.serial("admin CRUD APIs", () => {
       await page.getByPlaceholder("Title (ex. Narra Dining Table)").first().fill(title);
       await page.getByPlaceholder("Slug (ex. narra-dining-table)").first().fill(slug);
       await page.getByPlaceholder("Category (ex. Dining Room)").first().fill("Testing");
-      await page
-        .getByPlaceholder("Group (ex. Products, Showroom, Custom Builds)")
-        .first()
-        .fill("custom_builds");
       await page
         .getByPlaceholder("Description (ex. Solid wood table with hand-finished edges.)")
         .first()
@@ -355,8 +334,82 @@ test.describe.serial("admin CRUD APIs", () => {
       await expect(
         page.getByText(`E2E testimonial quote ${unique}`).first()
       ).toBeVisible();
+      const avatar = page.locator(`img[alt="E2E Customer ${unique}"]`).first();
+      await expect(avatar).toBeVisible();
+      await expect(avatar).toHaveAttribute(
+        "src",
+        /default-testimonial-avatar/
+      );
     } finally {
       await page.request.delete(`/api/admin/testimonials/${payload.testimonial.id}`);
+    }
+  });
+
+  test("admin uploads a testimonial avatar and attached avatar assets cannot be deleted", async ({
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    const unique = Date.now();
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
+      "base64"
+    );
+    let assetId: string | null = null;
+    let testimonialId: string | null = null;
+
+    try {
+      const upload = await page.request.post("/api/admin/assets/upload", {
+        multipart: {
+          alt_text: `E2E testimonial avatar ${unique}`,
+          file: {
+            name: `testimonial-avatar-${unique}.png`,
+            mimeType: "image/png",
+            buffer: png,
+          },
+        },
+      });
+      const uploadPayload = await upload.json().catch(() => null);
+
+      test.skip(
+        upload.status() !== 201,
+        `Vercel Blob upload is not available in this environment: ${
+          uploadPayload?.error ?? upload.status()
+        }`
+      );
+
+      assetId = uploadPayload.asset.id;
+      const create = await page.request.post("/api/admin/testimonials", {
+        data: {
+          name: `E2E Avatar Customer ${unique}`,
+          role: "Test Client",
+          quote: `E2E avatar testimonial quote ${unique}`,
+          avatar_asset_id: assetId,
+          sort_order: 0,
+          published: true,
+        },
+      });
+      const createPayload = await create.json();
+      expect(create.status(), JSON.stringify(createPayload)).toBe(201);
+      testimonialId = createPayload.testimonial.id;
+
+      const blockedDelete = await page.request.delete(`/api/admin/assets/${assetId}`);
+      expect(blockedDelete.status()).toBe(409);
+
+      await page.goto("/");
+      await expect(
+        page.getByText(`E2E avatar testimonial quote ${unique}`).first()
+      ).toBeVisible();
+      await expect(
+        page.locator(`img[alt="E2E Avatar Customer ${unique}"]`).first()
+      ).toHaveAttribute("src", /api%2Fblob|api\/blob/);
+    } finally {
+      if (testimonialId) {
+        await page.request.delete(`/api/admin/testimonials/${testimonialId}`);
+      }
+
+      if (assetId) {
+        await page.request.delete(`/api/admin/assets/${assetId}`);
+      }
     }
   });
 
@@ -378,6 +431,7 @@ test.describe.serial("admin CRUD APIs", () => {
         .getByPlaceholder("Quote (ex. The craftsmanship exceeded our expectations.)")
         .first()
         .fill(`E2E testimonial UI quote ${unique}`);
+      await expect(page.getByLabel("Testimonial avatar upload")).toBeVisible();
       await expect(page.getByPlaceholder(/sort order/i)).toHaveCount(0);
       await expect(page.getByRole("spinbutton")).toHaveCount(0);
       await page.getByRole("button", { name: "Create Testimonial" }).click();
@@ -386,6 +440,8 @@ test.describe.serial("admin CRUD APIs", () => {
       const row = page.locator(`[data-testimonial-name="${name}"]`);
       await expect(row).toBeVisible();
       await expect(row.getByLabel(`Drag ${name}`)).toBeVisible();
+      await expect(row.getByText("Default avatar")).toBeVisible();
+      await expect(row.getByLabel(`Upload avatar for ${name}`)).toBeVisible();
       await expect(page.getByText("Drag testimonial handles to reorder")).toBeVisible();
 
       page.once("dialog", (dialog) => dialog.accept());
@@ -484,7 +540,6 @@ test.describe.serial("admin CRUD APIs", () => {
           title: `E2E Referenced Asset ${unique}`,
           description: `E2E referenced asset project ${unique}`,
           category: "Testing",
-          group: "custom_builds",
           primary_asset_id: assetId,
           sort_order: 0,
           published: false,
@@ -703,7 +758,6 @@ test.describe.serial("admin CRUD APIs", () => {
               title: `E2E Authored Project ${unique}`,
               description: `Project created by a soon-to-be-deleted user ${unique}`,
               category: "Testing",
-              group: "products",
               sort_order: 0,
               published: false,
             },

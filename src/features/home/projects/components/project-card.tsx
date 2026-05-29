@@ -45,7 +45,7 @@ export function ProjectCard({
 
     const interval = window.setInterval(() => {
       setActiveImageIndex((current) => (current + 1) % images.length);
-    }, 3000);
+    }, 4000);
 
     return () => window.clearInterval(interval);
   }, [hasMultipleImages, images.length, isPreviewing]);
@@ -55,15 +55,23 @@ export function ProjectCard({
     setActiveImageIndex(0);
   }
 
+  function startPreview() {
+    setIsPreviewing(true);
+    if (hasMultipleImages) {
+      setActiveImageIndex(1 % images.length);
+    }
+  }
+
   return (
     <motion.button
       type="button"
       onClick={onOpen}
-      onMouseEnter={() => setIsPreviewing(true)}
+      onMouseEnter={startPreview}
       onMouseLeave={stopPreview}
-      onFocus={() => setIsPreviewing(true)}
+      onFocus={startPreview}
       onBlur={stopPreview}
-      className="group relative overflow-hidden rounded-xl border border-gray-950/[.1] bg-gray-950/[.01] text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-gray-950/[.05] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]"
+      data-image-count={imageCount}
+      className="group relative overflow-hidden rounded-lg border border-gray-950/[.1] bg-gray-950/[.01] text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-gray-950/[.05] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]"
       initial={{ y: 20 }}
       whileInView={{ y: 0 }}
       viewport={{ once: true }}
@@ -82,7 +90,7 @@ export function ProjectCard({
               src={previewImage}
               alt={previewAlt}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </motion.div>
@@ -91,7 +99,7 @@ export function ProjectCard({
             No image
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-95" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-95" />
         <div className="absolute left-4 top-4 flex items-center gap-2">
           <span className="inline-flex items-center rounded-full border border-white/25 bg-white/90 px-3 py-1 text-xs font-semibold text-gray-900 shadow-sm backdrop-blur">
             {category}
@@ -112,13 +120,19 @@ export function ProjectCard({
           </span>
         </div>
       </div>
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {title}
-        </h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
-          {description}
-        </p>
+      <div className="grid min-h-40 gap-4 p-5">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h3>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600 dark:text-gray-400">
+            {description}
+          </p>
+        </div>
+        <span className="mt-auto inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+          View details
+          <ArrowUpRight className="size-3.5" />
+        </span>
       </div>
     </motion.button>
   );

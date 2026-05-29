@@ -1,10 +1,18 @@
 "use client";
 
-import { GripVertical, Plus, Save, Trash2 } from "lucide-react";
+import { GripVertical, ImagePlus, Save, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { defaultTestimonialAvatar } from "@/lib/default-site-content";
 import { cn } from "@/lib/utils";
+
+interface TestimonialAsset {
+  id: string;
+  blob_url: string;
+  blob_pathname: string;
+  alt_text: string;
+}
 
 export interface AdminTestimonial {
   id: string;
@@ -12,6 +20,7 @@ export interface AdminTestimonial {
   role: string;
   quote: string;
   avatar_asset_id?: string | null;
+  avatar?: TestimonialAsset | null;
   sort_order: number;
   published: boolean;
   editable?: boolean;
@@ -21,8 +30,11 @@ interface TestimonialDraft {
   name: string;
   role: string;
   quote: string;
+  avatar_asset_id?: string | null;
   published: boolean;
 }
+
+const imageTypes = "image/jpeg,image/png,image/webp,image/avif";
 
 interface TestimonialManagerProps {
   initialTestimonials: AdminTestimonial[];
@@ -34,6 +46,7 @@ function toDraft(testimonial: AdminTestimonial): TestimonialDraft {
     name: testimonial.name,
     role: testimonial.role,
     quote: testimonial.quote,
+    avatar_asset_id: testimonial.avatar_asset_id ?? null,
     published: testimonial.published,
   };
 }
@@ -56,6 +69,28 @@ async function parseJsonResponse(response: Response) {
   }
 
   return payload;
+}
+
+async function uploadTestimonialAvatar(file: File, altText: string) {
+  const formData = new FormData();
+  formData.set("file", file);
+  formData.set("alt_text", altText);
+
+  const response = await fetch("/api/admin/assets/upload", {
+    method: "POST",
+    body: formData,
+  });
+  const payload = await parseJsonResponse(response);
+
+  return payload.asset as TestimonialAsset;
+}
+
+function getAssetUrl(asset: TestimonialAsset) {
+  return asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url;
+}
+
+function getAvatarUrl(testimonial: AdminTestimonial) {
+  return testimonial.avatar ? getAssetUrl(testimonial.avatar) : defaultTestimonialAvatar;
 }
 
 export function TestimonialManager({
@@ -94,18 +129,28 @@ export function TestimonialManager({
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
+    const avatarFile = form.get("avatar");
+    const name = String(form.get("name") ?? "").trim();
+    const avatarAltText =
+      String(form.get("avatar_alt_text") ?? "").trim() ||
+      `${name || "Customer"} testimonial avatar`;
 
     setBusyId("new");
     setStatus("Saving testimonial...");
 
     try {
+      const uploadedAvatar =
+        avatarFile instanceof File && avatarFile.size > 0
+          ? await uploadTestimonialAvatar(avatarFile, avatarAltText)
+          : null;
       const response = await fetch("/api/admin/testimonials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: String(form.get("name") ?? ""),
+          name,
           role: String(form.get("role") ?? ""),
           quote: String(form.get("quote") ?? ""),
+          avatar_asset_id: uploadedAvatar?.id ?? null,
           sort_order: testimonials.length,
           published: form.get("published") === "on",
         }),
@@ -113,6 +158,7 @@ export function TestimonialManager({
       const payload = await parseJsonResponse(response);
       const testimonial = {
         ...payload.testimonial,
+        avatar: uploadedAvatar,
         editable: true,
       } as AdminTestimonial;
 
@@ -134,23 +180,42 @@ export function TestimonialManager({
 
   async function saveTestimonial(id: string) {
     const draft = drafts[id];
+    const current = testimonials.find((testimonial) => testimonial.id === id);
 
-    if (!draft) {
+    if (!draft || !current) {
       return;
     }
+
+    const fileInput = document.getElementById(
+      `testimonial-avatar-${id}`
+    ) as HTMLInputElement | null;
+    const altInput = document.getElementById(
+      `testimonial-avatar-alt-${id}`
+    ) as HTMLInputElement | null;
+    const avatarFile = fileInput?.files?.[0];
+    const avatarAltText =
+      altInput?.value.trim() || `${draft.name || "Customer"} testimonial avatar`;
 
     setBusyId(id);
     setStatus("Saving testimonial...");
 
     try {
+      const uploadedAvatar = avatarFile
+        ? await uploadTestimonialAvatar(avatarFile, avatarAltText)
+        : null;
+      const nextDraft = {
+        ...draft,
+        avatar_asset_id: uploadedAvatar?.id ?? draft.avatar_asset_id ?? null,
+      };
       const response = await fetch(`/api/admin/testimonials/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(draft),
+        body: JSON.stringify(nextDraft),
       });
       const payload = await parseJsonResponse(response);
       const testimonial = {
         ...payload.testimonial,
+        avatar: uploadedAvatar ?? current.avatar ?? null,
         editable: true,
       } as AdminTestimonial;
 
@@ -163,6 +228,9 @@ export function TestimonialManager({
         ...current,
         [testimonial.id]: toDraft(testimonial),
       }));
+      if (fileInput) {
+        fileInput.value = "";
+      }
       setStatus("Testimonial saved");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to save testimonial.");
@@ -309,6 +377,19 @@ export function TestimonialManager({
       >
         <Input name="name" placeholder="Name (ex. Maria Santos)" required />
         <Input name="role" placeholder="Role (ex. Interior Designer)" required />
+        <label className="grid gap-1.5 text-sm font-medium">
+          <span>Avatar upload</span>
+          <Input
+            name="avatar"
+            type="file"
+            accept={imageTypes}
+            aria-label="Testimonial avatar upload"
+          />
+        </label>
+        <Input
+          name="avatar_alt_text"
+          placeholder="Avatar alt text (ex. Maria Santos testimonial portrait)"
+        />
         <label className="flex h-9 items-center gap-2 text-sm">
           <input name="published" type="checkbox" defaultChecked />
           Show in Testimonials section
@@ -321,7 +402,7 @@ export function TestimonialManager({
         />
         <div className="flex flex-wrap items-center gap-3 md:col-span-2">
           <Button type="submit" disabled={busyId === "new"}>
-            <Plus />
+            <ImagePlus />
             Create Testimonial
           </Button>
           {status ? <p className="text-sm text-gray-600">{status}</p> : null}
@@ -356,7 +437,7 @@ export function TestimonialManager({
                   finishMove();
                 }}
                 className={cn(
-                  "grid gap-4 p-4 transition-all duration-200 ease-out lg:grid-cols-[auto_1fr_auto]",
+                  "grid gap-4 p-4 transition-all duration-200 ease-out lg:grid-cols-[auto_96px_1fr_auto]",
                   isDragging &&
                     "scale-[0.99] bg-amber-50/70 opacity-75 shadow-lg ring-2 ring-amber-300 dark:bg-amber-950/20 dark:ring-amber-600",
                   isDragTarget &&
@@ -379,6 +460,22 @@ export function TestimonialManager({
                 >
                   <GripVertical className="size-4" />
                 </button>
+
+                <div className="space-y-2">
+                  <div className="mx-auto size-20 overflow-hidden rounded-full border bg-gray-100 dark:bg-gray-800">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getAvatarUrl(testimonial)}
+                      alt={`${draft.name || testimonial.name} avatar`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  {!testimonial.avatar ? (
+                    <p className="text-center text-xs text-gray-500">
+                      Default avatar
+                    </p>
+                  ) : null}
+                </div>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <Input
@@ -405,6 +502,19 @@ export function TestimonialManager({
                     placeholder="Quote (ex. The craftsmanship exceeded our expectations.)"
                     disabled={!testimonial.editable}
                     className="min-h-24 rounded-md border bg-transparent px-3 py-2 text-sm disabled:opacity-60 md:col-span-2"
+                  />
+                  <Input
+                    id={`testimonial-avatar-${testimonial.id}`}
+                    type="file"
+                    accept={imageTypes}
+                    aria-label={`Upload avatar for ${testimonial.name}`}
+                    disabled={!testimonial.editable}
+                  />
+                  <Input
+                    id={`testimonial-avatar-alt-${testimonial.id}`}
+                    placeholder="Avatar alt text (ex. Maria Santos testimonial portrait)"
+                    defaultValue={testimonial.avatar?.alt_text ?? ""}
+                    disabled={!testimonial.editable}
                   />
                   <label className="flex h-9 items-center gap-2 text-sm">
                     <input

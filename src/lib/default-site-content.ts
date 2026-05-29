@@ -1,6 +1,8 @@
 import type { FooterColumnData } from "@/features/navigation/footer/components/footer-data";
 import type { NavigationItem } from "@/features/navigation/header/components/navigation-data";
 
+export const defaultTestimonialAvatar = "/images/default-testimonial-avatar.svg";
+
 export interface DefaultProject {
   id: string;
   slug: string;

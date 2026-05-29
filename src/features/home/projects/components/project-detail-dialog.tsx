@@ -65,11 +65,12 @@ export function ProjectDetailDialog({
                     </p>
                   </div>
                   <div className="rounded-md border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/70">
-                    <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                      Project Type
+                    <p className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                      <Images className="size-3.5" />
+                      Gallery
                     </p>
                     <p className="mt-1 text-sm font-medium text-gray-950 dark:text-white">
-                      {project.groupLabel}
+                      {images.length || 1} project {images.length === 1 ? "image" : "images"}
                     </p>
                   </div>
                 </div>

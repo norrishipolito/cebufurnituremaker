@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Default testimonial avatar">
+  <rect width="160" height="160" rx="80" fill="#f5efe6"/>
+  <circle cx="80" cy="62" r="28" fill="#9a6a3a"/>
+  <path d="M35 136c6-29 24-46 45-46s39 17 45 46" fill="#5f4735"/>
+  <path d="M44 132c8-21 21-32 36-32s28 11 36 32" fill="#7f5b3f"/>
+</svg>

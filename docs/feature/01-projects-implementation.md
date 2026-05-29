@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Projects feature showcases Cebu Furniture Maker products in a responsive, tab-filtered gallery. It displays clickable image cards for product sets, showroom collections, and fabrication site suites. Each project supports a primary image plus an ordered image carousel, a public modal overview, and a dedicated detail page.
+The Projects feature showcases Cebu Furniture Maker work in a responsive single-grid gallery. It displays clickable image cards for all published projects in one `Projects` collection. Each project supports a primary image plus an ordered image carousel, a public modal overview, and a dedicated detail page.
 
 The public gallery reads database-backed editable projects first and falls back to `src/lib/default-site-content.ts` when the database is empty or unavailable.
 
@@ -28,7 +28,6 @@ src/
             `-- components/
                 |-- project-detail-dialog.tsx
                 |-- projects-header.tsx
-                |-- projects-tabs.tsx
                 |-- projects-grid.tsx
                 |-- project-card.tsx
                 |-- projects-data.ts
@@ -48,20 +47,7 @@ Responsibilities:
 - Composes `ProjectsClient`.
 - Adds the `id="projects"` section anchor used by navigation.
 
-Current default tab: first available project group.
-
-### `projects-tabs.tsx`
-
-Location: `src/features/home/projects/components/projects-tabs.tsx`
-
-Responsibilities:
-
-- Renders the available gallery groups with the shared `Tabs` UI component.
-- Receives `activeTab` and `onTabChange` from the page-level component.
-- Maps database group values to readable display labels:
-  - `products` -> Products
-  - `showroom` -> Showroom
-  - `fabrication_site` -> Fabrication Site
+The public Projects section no longer renders tabs or project type/group labels. All published rows appear in one polished grid.
 
 ### `projects-grid.tsx`
 
@@ -70,7 +56,7 @@ Location: `src/features/home/projects/components/projects-grid.tsx`
 Responsibilities:
 
 - Renders the responsive card grid.
-- Shows an empty state when no products exist for the selected tab.
+- Shows an empty state when no public projects exist.
 - Passes each product into `ProjectCard`.
 - Opens the project detail modal when a card is clicked.
 
@@ -89,6 +75,7 @@ Responsibilities:
 - Renders an individual clickable product image card with title, description, and category.
 - Uses Next.js image optimization.
 - Applies hover and entrance animation effects.
+- Matches the testimonial card border color so the public section language stays consistent.
 
 ### `project-detail-dialog.tsx`
 
@@ -99,7 +86,7 @@ Responsibilities:
 - Renders the project popout/modal through Radix Dialog.
 - Displays the project image carousel.
 - Shows thumbnail boxes that jump directly to a selected image.
-- Shows project overview, category, and project type in an aligned details panel.
+- Shows project overview, category, and image count in an aligned details panel.
 - Links to `/projects/[slug]` through the `View More Details` action.
 
 ### `app/projects/[slug]/page.tsx`
@@ -108,7 +95,7 @@ Responsibilities:
 
 - Reads a single published project by slug through `getPublicProjectBySlug`.
 - Falls back to the matching default project when the database is unavailable.
-- Shows all project images, overview/details, category, and project type.
+- Shows all project images, overview/details, category, and image count.
 - Renders the `cta-01` shadcn-space style call-to-action before the shared site footer.
 
 ### `projects-data.ts`
@@ -135,16 +122,12 @@ export interface Product {
   title: string;
   description: string;
   category: string;
-  group: string;
-  groupLabel: string;
+  group?: string;
+  groupLabel?: string;
 }
 ```
 
-Current default groups:
-
-- `Set`: Modern Sofa Set, Coffee Table Set, Dining Chair Set, End Table Set, Outdoor Patio Set, Bar Stool Set.
-- `Collection`: Dining Table Collection, Accent Chair Collection, Wall Unit Collection, Console Table Collection, Bookshelf Collection, Sideboard Collection, Occasional Table Collection.
-- `Suites`: Master Bedroom Suite, Executive Office Suite, Guest Bedroom Suite, Teen Bedroom Suite, Study Room Suite, Master Bedroom Luxury Suite.
+`group` and `groupLabel` remain optional compatibility fields in older static data but are not used by the public UI.
 
 ## Editable Admin Impact
 
@@ -157,19 +140,13 @@ Implemented behavior:
 - Multiple project images are attached through the existing `project_assets` join table.
 - Project create/edit forms accept multiple image files and an editor-provided alt text through labeled admin controls.
 - Editors can remove attached project images from the project row without deleting the underlying asset record.
-- Public project tabs map database groups to stable admin-friendly values:
-  - `products`
-  - `showroom`
-  - `fabrication_site`
-
-The implementation should keep a compatibility adapter so the public UI can keep its current tab labels while the database uses stable snake_case values.
+- Public project grouping/type controls are retired. The existing `projects.group` column remains as an internal compatibility field and new writes should default it to `projects`.
 
 ## Dependencies
 
 - `framer-motion` for animations.
 - `next/image` for optimized image rendering.
 - `@radix-ui/react-dialog` for the project overview modal.
-- `@/components/ui/tabs` for the tab control.
 - Tailwind CSS for layout and styling.
 
 ## Accessibility

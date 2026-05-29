@@ -452,22 +452,18 @@ Editable placeholder rules:
 - Repeatable placeholder rows, such as hero features, footer columns, and footer links, must be removable.
 - Inputs should show examples through placeholders, such as `Category (ex. Dining Room)`.
 
-Project group rules:
+Project grouping rules:
 
-- Project groups are editable text values, not a fixed enum.
-- The admin project form should let editors type a new group, for example `custom_builds`.
-- The public project tabs should be generated from the saved project groups.
-- Known legacy groups may be displayed with friendly labels:
-  - `products` -> `Products`
-  - `showroom` -> `Showroom`
-  - `fabrication_site` -> `Fabrication Site`
-- Unknown groups should be title-cased for display, for example `custom_builds` -> `Custom Builds`.
+- Project grouping/type controls are retired from the admin editor and public UI.
+- The public Projects section renders all published projects together in one polished grid with no tabs.
+- The existing `projects.group` database column remains for compatibility only.
+- New project writes from the editor and API default `projects.group` to `projects` when the client does not provide a value.
 
 Project CRUD rules:
 
 - The project admin UI must expose create, edit, delete, publish/unpublish, image attachment, and sorting controls.
 - The project visibility checkbox should be labeled `Show in Projects section` and should write to `projects.published`.
-- The public Projects component should show saved project groups as tabs. Editors should use the saved group tab to review newly added public projects.
+- The public Projects component should show saved public projects together in one grid. Editors review newly added public projects in that single Projects section.
 - Project create/edit forms must include an image upload input and image alt text input. The UI uploads the image through `POST /api/admin/assets/upload` and saves the returned asset ID as `projects.primary_asset_id`.
 - Project create/edit forms support selecting multiple safe image files at once. Uploaded images are attached to the saved project through `project_assets`, shown as thumbnail previews in the admin list, and can be detached from the project without deleting the media asset.
 - Uploaded project images must be loaded by public project queries with nested `primary_asset` data so saved images appear on the landing page.
@@ -580,7 +576,7 @@ Test files:
 
 Scenarios:
 
-- Empty database still renders the public homepage through runtime defaults. If database rows exist, tests should verify stable editable sections and project tabs rather than hard-coded starter copy.
+- Empty database still renders the public homepage through runtime defaults. If database rows exist, tests should verify stable editable sections and the single public Projects grid rather than hard-coded starter copy.
 - Admin subdomain rewrites to `/admin`.
 - Logged-out users are redirected to login.
 - The login page does not show the admin header, sidebar, or admin navigation links.

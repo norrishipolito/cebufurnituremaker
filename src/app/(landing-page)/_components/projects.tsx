@@ -1,23 +1,6 @@
 import { ProjectsClient } from "@/features/home/projects/components/projects-client";
 import { getPublicProjects } from "@/lib/site-content/queries";
 
-const groupLabels: Record<string, string> = {
-  products: "Products",
-  showroom: "Showroom",
-  fabrication_site: "Fabrication Site",
-};
-
-function toGroupLabel(group: string) {
-  return (
-    groupLabels[group] ??
-    group
-      .replace(/[_-]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (letter) => letter.toUpperCase())
-  );
-}
-
 interface PublicProjectRow {
   slug: string;
   image?: string;
@@ -58,8 +41,6 @@ export async function Projects() {
       title: project.title,
       description: project.description,
       category: project.category,
-      group: project.group ?? "products",
-      groupLabel: toGroupLabel(project.group ?? "products"),
     };
   });
 

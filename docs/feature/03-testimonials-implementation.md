@@ -4,6 +4,8 @@
 
 The Testimonials feature is an infinite scrolling marquee component that displays customer testimonials in a continuous horizontal scroll. It uses Magic UI's Marquee component to create a smooth, animated display of testimonial cards. The implementation follows the component architecture rules, with the main component in `_components/` and sub-components in `features/`.
 
+Testimonials are editable in `/admin/testimonials`. Editors can upload an optional avatar image for each testimonial. Uploaded avatars are stored as Vercel Blob assets and saved through `testimonials.avatar_asset_id`; public cards use `/images/default-testimonial-avatar.svg` whenever no avatar is attached.
+
 ## Architecture
 
 ### File Structure
@@ -105,7 +107,7 @@ interface TestimonialCardProps {
 
 **Features**:
 - Flexbox layout ensuring author info stays at bottom
-- Next.js Image optimization for profile pictures
+- Next.js Image optimization for uploaded avatars and the local default avatar fallback
 - Quote text with proper typography
 - Profile image, name, and role at bottom
 - Hover effects
@@ -179,6 +181,8 @@ export interface Testimonial {
   quote: string;
 }
 ```
+
+Database-backed testimonial rows may also include an `avatar` asset from `testimonials.avatar_asset_id`. The public mapper prefers the uploaded avatar URL, then legacy/default `img`, then `/images/default-testimonial-avatar.svg`.
 
 **Testimonials List**:
 1. **Carlos Mendoza** (Homeowner)
@@ -375,6 +379,7 @@ export interface Testimonial {
 - **next/image**: For optimized image loading
 - **tailwindcss**: For styling and responsive design
 - **lucide-react**: Not used directly but available for icons
+- **Vercel Blob assets**: For admin-uploaded testimonial avatars.
 
 ## Performance Considerations
 
