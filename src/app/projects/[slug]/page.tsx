@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/common/layouts/footer";
 import { ProjectCta } from "@/components/shadcn-space/blocks/cta-01/cta";
 import { ProjectImageCarousel } from "@/features/home/projects/components/project-image-carousel";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { getPublicProjectBySlug } from "@/lib/site-content/queries";
 
 interface ProjectDetailPageProps {
@@ -28,6 +29,8 @@ interface PublicProjectDetail {
   } | null;
 }
 
+export const revalidate = 3600;
+
 export default async function ProjectDetailPage({
   params,
 }: ProjectDetailPageProps) {
@@ -39,9 +42,8 @@ export default async function ProjectDetailPage({
   }
 
   const project = result.project as PublicProjectDetail;
-  const primaryImage = project.primary_asset?.blob_pathname
-    ? `/api/blob/${project.primary_asset.blob_pathname}`
-    : project.primary_asset?.blob_url ?? project.image ?? "";
+  const primaryImage =
+    getAssetDeliveryUrl(project.primary_asset) || project.image || "";
   const images =
     project.images?.length
       ? project.images
@@ -64,7 +66,7 @@ export default async function ProjectDetailPage({
               <ProjectImageCarousel
                 images={images}
                 title={project.title}
-                priority
+                preload
                 className="overflow-hidden rounded-lg"
                 imageClassName="lg:min-h-[620px]"
                 sizes="(max-width: 1024px) 100vw, 58vw"

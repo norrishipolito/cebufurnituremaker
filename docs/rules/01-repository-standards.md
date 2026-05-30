@@ -34,7 +34,8 @@
 - Images use Vercel Blob through `BLOB_READ_WRITE_TOKEN`.
 - `BLOB_ACCESS` must match the Blob store access mode.
 - Private Blob reads must only serve registered image assets.
+- Private Blob delivery for public images should expose browser and Vercel CDN cache headers while preserving registered-asset checks and ETags.
+- Uploaded Blob paths must remain UUID-versioned so long Blob cache lifetimes are safe.
 - Safe upload types are JPEG, PNG, WebP, and AVIF.
 - Uploaded image content must match the declared safe image MIME type.
 - Asset deletion must be blocked while an asset is attached to projects, testimonials, or project asset links.
-

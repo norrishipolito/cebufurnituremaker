@@ -1,5 +1,6 @@
 import { TestimonialsHeader } from "@/features/home/testimonials/components/testimonials-header";
 import { TestimonialsMarquee } from "@/features/home/testimonials/components/testimonials-marquee";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { defaultTestimonialAvatar } from "@/lib/default-site-content";
 import { getPublicTestimonials } from "@/lib/site-content/queries";
 
@@ -19,9 +20,10 @@ export async function Testimonials() {
   const { testimonials } = await getPublicTestimonials();
   const mappedTestimonials = (testimonials as PublicTestimonialRow[]).map(
     (testimonial) => ({
-      img: testimonial.avatar?.blob_pathname
-        ? `/api/blob/${testimonial.avatar.blob_pathname}`
-        : testimonial.avatar?.blob_url ?? testimonial.img ?? defaultTestimonialAvatar,
+      img:
+        getAssetDeliveryUrl(testimonial.avatar) ||
+        testimonial.img ||
+        defaultTestimonialAvatar,
       name: testimonial.name,
       role: testimonial.role,
       quote: testimonial.quote,

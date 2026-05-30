@@ -153,7 +153,7 @@ playwright.config.ts
 - Add a Next.js proxy that rewrites the configured admin hostname to `/admin` while preserving paths.
 - Add server-side RBAC checks in every admin page and route handler.
 - Update public landing sections to consume typed content helpers instead of importing static feature data directly.
-- Mark the landing page as dynamic so saved admin edits are read on request and reflected publicly after content mutations.
+- Cache the landing page and public project detail pages with one-hour ISR, then invalidate both after public-facing content mutations.
 - Keep the current component architecture rule: admin page layout components belong in `app/admin/_components`, while reusable admin sub-components belong in `features/admin`.
 
 ## Default Empty-Database Behavior
@@ -370,7 +370,7 @@ Validation rules:
 - Validate image MIME type, image size, and required alt text before Vercel Blob upload.
 - Validate uploaded image file signatures so spoofed MIME types are rejected.
 - Return `400` for invalid input, `401` for unauthenticated access, `403` for unauthorized access, and `404` for missing entities.
-- Call `revalidatePath("/")` after mutations that affect public pages.
+- Call the shared public-site invalidation helper after mutations that affect the homepage or public project detail pages, including asset alt-text edits.
 
 ## Image Handling
 
@@ -392,6 +392,9 @@ Recommended constraints:
 - Start with a 5 MB max file size.
 - Require alt text for public images.
 - Private blob reads should only serve registered image assets and should return generic errors to clients.
+- UUID-versioned uploads should set a long Blob cache lifetime.
+- Private public-image responses should preserve ETags and send short browser caching plus longer `Vercel-CDN-Cache-Control` caching with stale-while-revalidate.
+- Public and admin rendering should use the shared asset resolver so stored absolute URLs stay compatible while private or legacy records use `/api/blob/...`.
 - Asset deletion should be blocked while the asset is still attached to projects, testimonials, or project asset links.
 
 `next.config.ts` must allow the Vercel Blob image host used by deployment.
@@ -402,6 +405,8 @@ Blob access can be public or private. This app supports both:
 - `BLOB_ACCESS=public` uploads with `access: "public"` and stores the direct public blob URL.
 
 If the Vercel Blob store was created as private, `BLOB_ACCESS` must be `private`. Vercel rejects `access: "public"` on a private store.
+
+The current deployment keeps `BLOB_ACCESS=private`. Public images still route through `/api/blob/[...pathname]`, which verifies the registered asset before serving a CDN-cacheable response.
 
 ## Admin UX
 
@@ -442,7 +447,7 @@ Content editor field expectations:
 - The About showcase description should appear below the showcase title and showcase image URL fields.
 - The admin header includes a dark mode toggle for authenticated users, and the chosen admin theme is persisted in local storage.
 
-Save actions call the matching section endpoint and should revalidate the public homepage so changes appear after saving.
+Save actions call the matching section endpoint and should invalidate the cached public homepage and project detail pages so changes appear after saving.
 
 Editable placeholder rules:
 

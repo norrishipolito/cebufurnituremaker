@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useMotionValueEvent, useScroll } from "framer-motion";
+import { motion, useMotionValueEvent } from "framer-motion";
 import { NavigationBrand } from "@/features/navigation/header/components/navigation-brand";
 import { NavigationItems } from "@/features/navigation/header/components/navigation-items";
 import { NavigationMobileMenu } from "@/features/navigation/header/components/navigation-mobile-menu";
 import type { NavigationItem } from "@/features/navigation/header/components/navigation-data";
 import { cn } from "@/lib/utils";
+import { useSyncedScrollY } from "@/hooks/use-synced-scroll-y";
 
 export function NavigationClient({ items }: { items: NavigationItem[] }) {
-  const { scrollY } = useScroll();
+  const scrollY = useSyncedScrollY();
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
   const [lastScrollY, setLastScrollY] = useState(0);

@@ -85,6 +85,8 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - Uploading images happens from the Projects page.
 - Uploaded image content must match the declared safe image MIME type.
 - Private Vercel Blob reads should serve only registered image assets.
+- Private public-image reads use ETags, short browser caching, and longer Vercel CDN caching with stale-while-revalidate.
+- UUID-versioned uploads use a long Blob cache lifetime, and saved image URLs resolve through the shared compatibility helper.
 - Asset deletion must be blocked while the asset is attached to projects, testimonials, or project asset links.
 
 ## User Management Rules
@@ -105,7 +107,7 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - Backend logs must go through the server-only shared logger and include `timestamp`, `logLevel`, and `runtime: "backend"`.
 - Logs should include useful context such as route, method, status, actor id, error code, detail, hint, and constraint.
 - Logs must not expose raw SQL params or secrets.
-- Use `revalidatePath("/")` after mutations that affect public homepage output.
+- The homepage and project detail pages use one-hour ISR. Use the shared invalidation helper after mutations that affect public output, including asset alt-text edits.
 
 ## Environment Notes
 
@@ -195,6 +197,9 @@ pnpm exec playwright test tests/e2e/admin-auth.spec.ts --project=chromium
 - Spoofed image MIME uploads are rejected.
 - Attached assets cannot be deleted before detaching from content.
 - Public back navigation from missing routes should not leave revealed content blank.
+- Project cards should still open their preview modal after navigating to a project detail page and returning with the browser back button.
+- Project cards should still open after leaving the homepage through another link, going back, then using the Projects navigation.
+- Project detail navigation closes the controlled Radix Dialog before routing on the next animation frame. Browser Back keeps its restored scroll position, and landing scroll MotionValues resynchronize without forcing a scroll.
 - Maintainers cannot see or access admin-only Users/Settings management.
 - Login page does not show admin chrome.
 - Admin dark mode no longer causes hydration mismatch.

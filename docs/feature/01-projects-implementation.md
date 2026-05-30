@@ -87,7 +87,8 @@ Responsibilities:
 - Displays the project image carousel.
 - Shows thumbnail boxes that jump directly to a selected image.
 - Shows project overview, category, and image count in an aligned details panel.
-- Links to `/projects/[slug]` through the `View More Details` action.
+- Closes the controlled Radix Dialog through dialog-owned behavior before routing to `/projects/[slug]` on the next animation frame.
+- Leaves browser Back scroll restoration intact so returning visitors remain near the Projects section and can immediately reopen cards.
 
 ### `app/projects/[slug]/page.tsx`
 
@@ -95,7 +96,9 @@ Responsibilities:
 
 - Reads a single published project by slug through `getPublicProjectBySlug`.
 - Falls back to the matching default project when the database is unavailable.
+- Uses one-hour ISR caching and is invalidated with the public homepage after editor mutations.
 - Shows all project images, overview/details, category, and image count.
+- Preloads the above-the-fold active image while gallery and grid images remain lazy.
 - Renders the `cta-01` shadcn-space style call-to-action before the shared site footer.
 
 ### `projects-data.ts`
@@ -137,6 +140,7 @@ Implemented behavior:
 - If Supabase has no published project rows, the public gallery uses the default products from `src/lib/default-site-content.ts`.
 - Admin project forms show database rows when they exist and read-only default rows while the database is empty.
 - Uploaded project images are stored in Vercel Blob and referenced by asset records.
+- Saved asset URLs resolve through one shared compatibility helper: stored absolute URLs remain direct, while private or legacy records use `/api/blob/...`.
 - Multiple project images are attached through the existing `project_assets` join table.
 - Project create/edit forms accept multiple image files and an editor-provided alt text through labeled admin controls.
 - Editors can remove attached project images from the project row without deleting the underlying asset record.
@@ -152,9 +156,11 @@ Implemented behavior:
 ## Accessibility
 
 - The section uses a stable `id="projects"` anchor for navigation.
-- Tabs should remain keyboard-accessible through the shared Tabs component.
+- Project cards are buttons that open a keyboard-accessible Radix Dialog preview.
 - Project images should use meaningful alt text once editable assets are introduced.
 - Empty states should be readable by assistive technologies.
+- Project card interactions should recover after browser back/forward navigation from detail pages.
+- Project card interactions should also recover after returning from another page, using the header Projects navigation, and opening a card.
 
 ## Related Documentation
 

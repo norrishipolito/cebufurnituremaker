@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { GripVertical, ImagePlus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { cn } from "@/lib/utils";
 
 interface ProjectAsset {
@@ -111,7 +112,7 @@ function getImageUrl(project: AdminProject) {
 }
 
 function getAssetUrl(asset: ProjectAsset) {
-  return asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url;
+  return getAssetDeliveryUrl(asset);
 }
 
 function getProjectImages(project: AdminProject) {

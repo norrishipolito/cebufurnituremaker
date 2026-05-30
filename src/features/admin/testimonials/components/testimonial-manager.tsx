@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { defaultTestimonialAvatar } from "@/lib/default-site-content";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { cn } from "@/lib/utils";
 
 interface TestimonialAsset {
@@ -86,7 +87,7 @@ async function uploadTestimonialAvatar(file: File, altText: string) {
 }
 
 function getAssetUrl(asset: TestimonialAsset) {
-  return asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url;
+  return getAssetDeliveryUrl(asset);
 }
 
 function getAvatarUrl(testimonial: AdminTestimonial) {

@@ -4,6 +4,7 @@ import { Save, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 
 export interface AdminAsset {
   id: string;
@@ -34,7 +35,7 @@ async function parseJsonResponse(response: Response) {
 }
 
 function getAssetUrl(asset: AdminAsset) {
-  return asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url;
+  return getAssetDeliveryUrl(asset);
 }
 
 function formatFileSize(size: number) {

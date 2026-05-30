@@ -9,11 +9,13 @@ import { ProjectImageCarousel } from "./project-image-carousel";
 
 interface ProjectDetailDialogProps {
   project: Product | null;
+  onNavigateToProject: (href: string) => void;
   onOpenChange: (open: boolean) => void;
 }
 
 export function ProjectDetailDialog({
   project,
+  onNavigateToProject,
   onOpenChange,
 }: ProjectDetailDialogProps) {
   const images = project?.images ?? [];
@@ -84,10 +86,18 @@ export function ProjectDetailDialog({
                 </div>
                 <div className="mt-6">
                   <Button asChild>
-                    <Link href={`/projects/${project.slug}`}>
-                      <ExternalLink />
-                      View More Details
-                    </Link>
+                    <Dialog.Close asChild>
+                      <Link
+                        href={`/projects/${project.slug}`}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          onNavigateToProject(`/projects/${project.slug}`);
+                        }}
+                      >
+                        <ExternalLink />
+                        View More Details
+                      </Link>
+                    </Dialog.Close>
                   </Button>
                 </div>
               </div>

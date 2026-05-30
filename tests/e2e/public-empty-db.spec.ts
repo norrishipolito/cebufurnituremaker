@@ -30,6 +30,25 @@ test("public homepage renders editable sections and one projects grid", async ({
   await expect(page.locator("#projects").getByRole("button").first()).toBeVisible();
 });
 
+test("public project cards use the testimonial border color", async ({ page }) => {
+  await page.goto("/");
+
+  const projectCard = page.locator("#projects").getByRole("button").first();
+  const testimonialCard = page.locator("#testimonials figure").first();
+
+  await expect(projectCard).toBeVisible();
+  await expect(testimonialCard).toBeVisible();
+
+  const projectBorderColor = await projectCard.evaluate(
+    (element) => window.getComputedStyle(element).borderTopColor
+  );
+  const testimonialBorderColor = await testimonialCard.evaluate(
+    (element) => window.getComputedStyle(element).borderTopColor
+  );
+
+  expect(projectBorderColor).toBe(testimonialBorderColor);
+});
+
 test("public project cards open a carousel modal and detail page", async ({ page }) => {
   await page.goto("/");
   await page.locator("#projects").scrollIntoViewIfNeeded();
@@ -73,6 +92,120 @@ test("public project cards open a carousel modal and detail page", async ({ page
     })
   ).toBeVisible();
   await expect(page.getByRole("contentinfo")).toBeVisible();
+});
+
+test("public project cards still open the modal after returning from a detail page", async ({
+  isMobile,
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#projects").scrollIntoViewIfNeeded();
+
+  const projectCard = page.locator("#projects").getByRole("button").first();
+  await expect(projectCard).toBeVisible();
+  await projectCard.scrollIntoViewIfNeeded();
+  const projectsTopBeforeNavigation = await page
+    .locator("#projects")
+    .evaluate((element) => element.getBoundingClientRect().top);
+  const title = (await projectCard.locator("h3").first().innerText()).trim();
+
+  await projectCard.click();
+
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: title })).toBeVisible();
+
+  await dialog.getByRole("link", { name: "View More Details" }).click();
+  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.getComputedStyle(document.body).pointerEvents))
+    .toBe("auto");
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect
+    .poll(() =>
+      page
+        .locator("#projects")
+        .evaluate(
+          (element, expectedTop) =>
+            Math.abs(element.getBoundingClientRect().top - expectedTop),
+          projectsTopBeforeNavigation
+        )
+    )
+    .toBeLessThan(320);
+  await expect
+    .poll(() => page.evaluate(() => window.getComputedStyle(document.body).pointerEvents))
+    .toBe("auto");
+
+  const returnedProjectCard = page.locator("#projects").getByRole("button").first();
+  await expect(returnedProjectCard).toBeVisible();
+  await returnedProjectCard.click();
+
+  await expect(page.getByRole("dialog").getByRole("heading", { name: title })).toBeVisible();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Close project details" })
+    .click();
+
+  if (isMobile) {
+    await page.getByRole("button", { name: "Open menu" }).click();
+    await page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Home" })
+      .click();
+  } else {
+    await page.getByRole("link", { name: "Home" }).first().click();
+  }
+
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(80);
+  await expect(page.locator("#hero h1")).toHaveText(/\S/);
+  await expectCumulativeOpacity(page.locator("#hero h1"));
+  await expect(page.locator("#hero p").first()).toHaveText(/\S/);
+  await expectCumulativeOpacity(page.locator("#hero p").first());
+});
+
+test("public project cards still open after returning from another page and using Projects nav", async ({
+  isMobile,
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("footer").scrollIntoViewIfNeeded();
+  await expect(page.locator("footer")).toBeVisible();
+
+  await page.getByRole("link", { name: "Collections" }).click();
+  await expect(page).toHaveURL(/\/collections$/);
+  await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect
+    .poll(() => page.evaluate(() => window.getComputedStyle(document.body).pointerEvents))
+    .toBe("auto");
+
+  if (isMobile) {
+    await page.getByRole("button", { name: "Open menu" }).click();
+    await page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Projects" })
+      .click();
+  } else {
+    await page.getByRole("link", { name: "Projects" }).first().click();
+  }
+  await expect
+    .poll(() =>
+      page
+        .locator("#projects")
+        .evaluate((element) => Math.abs(element.getBoundingClientRect().top - 80))
+    )
+    .toBeLessThan(160);
+
+  const projectCard = page.locator("#projects").getByRole("button").first();
+  await expect(projectCard).toBeVisible();
+  const title = (await projectCard.locator("h3").first().innerText()).trim();
+
+  await projectCard.click();
+  await expect(page.getByRole("dialog").getByRole("heading", { name: title })).toBeVisible();
 });
 
 test("public project cards preview multiple images on hover", async ({

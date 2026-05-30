@@ -1,4 +1,5 @@
 import { defaultSiteContent, getDefaultSection, type SiteSectionKey } from "@/lib/default-site-content";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { createDbClient } from "@/lib/db/client";
 import { assets, projectAssets, projects, siteSections, testimonials } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
@@ -136,7 +137,7 @@ function buildProjectImages(
     })
     .map((asset) => ({
       id: asset.id,
-      url: asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url,
+      url: getAssetDeliveryUrl(asset),
       alt: asset.alt_text,
     }));
 }

@@ -18,7 +18,7 @@ export function HeroBackground({ backgroundY, image, alt }: HeroBackgroundProps)
             src={image}
             alt={alt}
             fill
-            priority
+            preload
             className="object-cover"
             quality={90}
             sizes="100vw"

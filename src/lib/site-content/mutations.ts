@@ -9,6 +9,7 @@ export function getRequiredServiceClient() {
 
 export async function revalidatePublicSite() {
   revalidatePath("/");
+  revalidatePath("/projects/[slug]", "page");
 }
 
 export async function writeAuditLog(input: {

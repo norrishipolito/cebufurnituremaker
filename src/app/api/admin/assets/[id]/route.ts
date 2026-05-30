@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { jsonError, missingServiceConfig } from "@/lib/api/responses";
 import { deleteBlob } from "@/lib/blob/upload";
-import { getRequiredServiceClient, writeAuditLog } from "@/lib/site-content/mutations";
+import { getRequiredServiceClient, revalidatePublicSite, writeAuditLog } from "@/lib/site-content/mutations";
 import { assetPatchSchema } from "@/lib/site-content/validators";
 import { assets, projectAssets, projects, testimonials } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -38,6 +38,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       entityType: "asset",
       entityId: id,
     });
+    await revalidatePublicSite();
 
     return NextResponse.json({ asset: data });
   } catch (error) {

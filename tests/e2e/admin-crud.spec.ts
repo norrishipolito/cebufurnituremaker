@@ -506,6 +506,8 @@ test.describe.serial("admin CRUD APIs", () => {
   }) => {
     await loginAsAdmin(page);
     const unique = Date.now();
+    const initialAlt = `Referenced asset ${unique}`;
+    const updatedAlt = `Referenced asset updated ${unique}`;
     const png = Buffer.from(
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
       "base64"
@@ -516,7 +518,7 @@ test.describe.serial("admin CRUD APIs", () => {
     try {
       const upload = await page.request.post("/api/admin/assets/upload", {
         multipart: {
-          alt_text: `Referenced asset ${unique}`,
+          alt_text: initialAlt,
           file: {
             name: `referenced-${unique}.png`,
             mimeType: "image/png",
@@ -534,6 +536,18 @@ test.describe.serial("admin CRUD APIs", () => {
       );
 
       assetId = uploadPayload.asset.id;
+      const blobResponse = await page.request.get(
+        `/api/blob/${uploadPayload.asset.blob_pathname}`
+      );
+      expect(blobResponse.ok()).toBeTruthy();
+      expect(blobResponse.headers()["cache-control"]).toBe(
+        "public, max-age=3600, stale-while-revalidate=86400"
+      );
+      expect(blobResponse.headers()["vercel-cdn-cache-control"]).toBe(
+        "public, max-age=86400, stale-while-revalidate=604800"
+      );
+      expect(blobResponse.headers().etag).toBeTruthy();
+
       const create = await page.request.post("/api/admin/projects", {
         data: {
           slug: `e2e-referenced-asset-${unique}`,
@@ -542,7 +556,7 @@ test.describe.serial("admin CRUD APIs", () => {
           category: "Testing",
           primary_asset_id: assetId,
           sort_order: 0,
-          published: false,
+          published: true,
         },
       });
       expect(create.status()).toBe(201);
@@ -551,6 +565,17 @@ test.describe.serial("admin CRUD APIs", () => {
 
       const blockedDelete = await page.request.delete(`/api/admin/assets/${assetId}`);
       expect(blockedDelete.status()).toBe(409);
+
+      await page.goto("/");
+      await expect(page.locator(`img[alt="${initialAlt}"]`).first()).toBeVisible();
+
+      const updateAsset = await page.request.patch(`/api/admin/assets/${assetId}`, {
+        data: { alt_text: updatedAlt },
+      });
+      expect(updateAsset.ok()).toBeTruthy();
+
+      await page.goto("/");
+      await expect(page.locator(`img[alt="${updatedAlt}"]`).first()).toBeVisible();
 
       const assetList = await page.request.get("/api/admin/assets");
       expect(assetList.ok()).toBeTruthy();
