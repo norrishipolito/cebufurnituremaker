@@ -6,6 +6,8 @@ This file compacts the implementation decisions, fixes, and standing rules agree
 
 Before using this summary for implementation, read `AGENTS.md` and every file in `docs/rules/`.
 
+Before implementing, research relevant current documentation and primary sources. Prefer official framework, platform, API, and security documentation when behavior may have changed, and inspect repository history, deployment evidence, or runtime behavior when relevant.
+
 ## Current Stack
 
 - App: Next.js App Router, React, TypeScript, Tailwind CSS.
@@ -200,6 +202,7 @@ pnpm exec playwright test tests/e2e/admin-auth.spec.ts --project=chromium
 - Project cards should still open their preview modal after navigating to a project detail page and returning with the browser back button.
 - Project cards should still open after leaving the homepage through another link, going back, then using the Projects navigation.
 - Project detail navigation closes the controlled Radix Dialog before routing on the next animation frame. Browser Back keeps its restored scroll position, and landing scroll MotionValues resynchronize without forcing a scroll.
+- Project detail navigation hands the closing Dialog off to a lightweight modal-shaped pending shell, and the detail route exposes a loading skeleton so slower transitions never show a blank intermediate state.
 - Maintainers cannot see or access admin-only Users/Settings management.
 - Login page does not show admin chrome.
 - Admin dark mode no longer causes hydration mismatch.

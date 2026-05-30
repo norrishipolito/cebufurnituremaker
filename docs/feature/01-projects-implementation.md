@@ -27,6 +27,7 @@ src/
         `-- projects/
             `-- components/
                 |-- project-detail-dialog.tsx
+                |-- project-navigation-pending.tsx
                 |-- projects-header.tsx
                 |-- projects-grid.tsx
                 |-- project-card.tsx
@@ -88,7 +89,19 @@ Responsibilities:
 - Shows thumbnail boxes that jump directly to a selected image.
 - Shows project overview, category, and image count in an aligned details panel.
 - Closes the controlled Radix Dialog through dialog-owned behavior before routing to `/projects/[slug]` on the next animation frame.
+- Hands the closing dialog off to a lightweight modal-shaped pending shell so slow detail navigation shows clear progress instead of an exposed blank intermediate state.
 - Leaves browser Back scroll restoration intact so returning visitors remain near the Projects section and can immediately reopen cards.
+
+### `project-navigation-pending.tsx`
+
+Location: `src/features/home/projects/components/project-navigation-pending.tsx`
+
+Responsibilities:
+
+- Preserves the modal-shaped visual surface while a project detail route is opening.
+- Shows a small spinner, the selected project title, and concise status text.
+- Avoids rendering a second carousel or requesting duplicate images during navigation.
+- Allows the Radix Dialog to close internally first so its modal interaction lock is released before routing.
 
 ### `app/projects/[slug]/page.tsx`
 
@@ -97,6 +110,7 @@ Responsibilities:
 - Reads a single published project by slug through `getPublicProjectBySlug`.
 - Falls back to the matching default project when the database is unavailable.
 - Uses one-hour ISR caching and is invalidated with the public homepage after editor mutations.
+- Exposes a route-level `loading.tsx` skeleton so slow dynamic navigation has an immediate partial loading boundary.
 - Shows all project images, overview/details, category, and image count.
 - Preloads the above-the-fold active image while gallery and grid images remain lazy.
 - Renders the `cta-01` shadcn-space style call-to-action before the shared site footer.
@@ -152,6 +166,12 @@ Implemented behavior:
 - `next/image` for optimized image rendering.
 - `@radix-ui/react-dialog` for the project overview modal.
 - Tailwind CSS for layout and styling.
+
+## Research Basis
+
+- Next.js App Router `useRouter`: https://nextjs.org/docs/app/api-reference/functions/use-router
+- Next.js App Router prefetching: https://nextjs.org/docs/app/guides/prefetching
+- Radix Dialog: https://www.radix-ui.com/primitives/docs/components/dialog
 
 ## Accessibility
 

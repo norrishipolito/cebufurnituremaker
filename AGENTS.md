@@ -19,6 +19,7 @@ Modern agent setup:
 
 Important standing rules:
 
+- Research relevant current documentation and primary sources before implementing. Do not rely only on assumptions or remembered platform behavior.
 - Keep documentation synchronized with implementation changes.
 - Keep feature plans updated as implementation changes.
 - Editable content must have default fallbacks for an empty database.

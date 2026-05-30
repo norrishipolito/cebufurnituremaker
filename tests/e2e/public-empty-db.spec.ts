@@ -94,6 +94,45 @@ test("public project cards open a carousel modal and detail page", async ({ page
   await expect(page.getByRole("contentinfo")).toBeVisible();
 });
 
+test("public project details show modal feedback while the route loads", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#projects").scrollIntoViewIfNeeded();
+
+  const projectCard = page.locator("#projects").getByRole("button").first();
+  await expect(projectCard).toBeVisible();
+  const title = (await projectCard.locator("h3").first().innerText()).trim();
+  let releaseRequest = () => {};
+  const requestGate = new Promise<void>((resolve) => {
+    releaseRequest = resolve;
+  });
+
+  await page.route(/\/projects\/[^/?]+(?:\?.*)?$/, async (route) => {
+    await requestGate;
+    await route.continue();
+  });
+
+  await projectCard.click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: title })).toBeVisible();
+
+  try {
+    await dialog.getByRole("link", { name: "View More Details" }).click();
+    await expect(
+      page.getByRole("status", { name: `Opening ${title} details` })
+    ).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => window.getComputedStyle(document.body).pointerEvents))
+      .toBe("auto");
+  } finally {
+    releaseRequest();
+  }
+
+  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
+});
+
 test("public project cards still open the modal after returning from a detail page", async ({
   isMobile,
   page,

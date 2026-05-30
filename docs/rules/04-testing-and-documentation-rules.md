@@ -23,6 +23,7 @@ If one cannot be run because of environment or permission constraints, say exact
 ## Documentation Sync
 
 - Keep documentation changes in the same patch as implementation changes.
+- Record important external research sources in plans or feature docs when implementation decisions depend on framework, platform, API, security, or deployment behavior.
 - Update feature docs when architecture, behavior, fields, routes, or tests change.
 - Update `docs/03-chat-implementation-summary.md` when a decision is broad enough to affect future tasks.
 - Update `docs/rules/` when a standing rule is added, removed, or clarified.
@@ -37,4 +38,3 @@ Before final response:
 - APIs validate input and enforce roles.
 - Tests cover the changed workflow.
 - Docs match the implementation.
-

@@ -23,6 +23,10 @@ Use targeted reads only for follow-up prompts in the same chat when the relevant
 ## Working Pattern
 
 - Understand the current docs and code before proposing or editing.
+- Research relevant current documentation and primary sources before implementing.
+- Prefer official framework, platform, API, and security documentation when behavior may have changed.
+- Inspect repository history, deployment evidence, or runtime behavior when they are relevant to the reported issue.
+- Do not implement from assumptions or remembered platform behavior alone.
 - Prefer existing local patterns over new abstractions.
 - Keep changes scoped to the user request and the documented feature plan.
 - If implementation changes behavior, update documentation in the same turn.
@@ -36,4 +40,3 @@ Before marking implementation work complete:
 2. Run `pnpm lint`.
 3. Run `pnpm build`.
 4. Run `pnpm test:e2e`, or clearly explain why it could not be run.
-

@@ -22,11 +22,13 @@ These rules capture the implementation decisions agreed for Cebu Furniture Maker
 For every feature:
 
 1. Read the relevant files in `docs/feature/`.
-2. Check whether the existing documentation is outdated.
-3. Update the relevant feature plan before or during implementation.
-4. Implement the feature using the existing app architecture.
-5. Add or update Playwright tests for the user-facing behavior.
-6. Run verification before considering the feature complete.
+2. Research relevant current documentation and primary sources before implementing. Prefer official framework, platform, API, and security documentation when behavior may have changed.
+3. Inspect repository history, deployment evidence, or runtime behavior when relevant to the request.
+4. Check whether the existing documentation is outdated.
+5. Update the relevant feature plan before or during implementation, including important research sources when they inform the decision.
+6. Implement the feature using the existing app architecture.
+7. Add or update Playwright tests for the user-facing behavior.
+8. Run verification before considering the feature complete.
 
 Before every implementation task, also read and follow the standing rules in `docs/rules/`.
 
