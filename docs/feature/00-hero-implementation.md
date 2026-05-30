@@ -199,7 +199,7 @@ export function Hero() {
 
 ### Scroll-Based Animations
 
-The hero section uses Framer Motion's `useScroll` and `useTransform` hooks for scroll-based animations:
+The hero section uses Framer Motion scroll MotionValues and `useTransform` hooks for scroll-based animations. The shared landing-page scroll hook synchronizes its MotionValue to `window.scrollY` on `pageshow` and `popstate` so browser history restoration updates Hero opacity without changing the restored scroll position:
 
 1. **Background Parallax**:
    - Scroll range: `[0, 500]`
@@ -341,7 +341,7 @@ interface HeroFeatureItemProps {
 
 ## Performance Considerations
 
-1. **Image Optimization**: Uses Next.js Image component with `priority` flag for above-the-fold content
+1. **Image Optimization**: Uses Next.js Image component with `preload` for above-the-fold content
 2. **Lazy Animations**: Scroll-based animations only activate when needed
 3. **Component Splitting**: Sub-components allow for code splitting
 4. **Motion Values**: Uses Framer Motion's optimized transform values

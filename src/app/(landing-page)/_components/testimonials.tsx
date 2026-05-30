@@ -1,5 +1,7 @@
 import { TestimonialsHeader } from "@/features/home/testimonials/components/testimonials-header";
 import { TestimonialsMarquee } from "@/features/home/testimonials/components/testimonials-marquee";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
+import { defaultTestimonialAvatar } from "@/lib/default-site-content";
 import { getPublicTestimonials } from "@/lib/site-content/queries";
 
 interface PublicTestimonialRow {
@@ -9,6 +11,7 @@ interface PublicTestimonialRow {
   quote: string;
   avatar?: {
     blob_url?: string | null;
+    blob_pathname?: string | null;
     alt_text?: string | null;
   } | null;
 }
@@ -17,7 +20,10 @@ export async function Testimonials() {
   const { testimonials } = await getPublicTestimonials();
   const mappedTestimonials = (testimonials as PublicTestimonialRow[]).map(
     (testimonial) => ({
-      img: testimonial.avatar?.blob_url ?? testimonial.img ?? "",
+      img:
+        getAssetDeliveryUrl(testimonial.avatar) ||
+        testimonial.img ||
+        defaultTestimonialAvatar,
       name: testimonial.name,
       role: testimonial.role,
       quote: testimonial.quote,

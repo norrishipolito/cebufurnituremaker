@@ -9,6 +9,9 @@ interface RouteContext {
   params: Promise<{ pathname: string[] }>;
 }
 
+const browserCacheControl = "public, max-age=3600, stale-while-revalidate=86400";
+const vercelCdnCacheControl = "public, max-age=86400, stale-while-revalidate=604800";
+
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { pathname } = await context.params;
@@ -47,9 +50,13 @@ export async function GET(request: Request, context: RouteContext) {
     }
 
     if (result.statusCode === 304) {
+      const headers = new Headers(Object.fromEntries(result.headers.entries()));
+      headers.set("Cache-Control", browserCacheControl);
+      headers.set("Vercel-CDN-Cache-Control", vercelCdnCacheControl);
+
       return new NextResponse(null, {
         status: 304,
-        headers: Object.fromEntries(result.headers.entries()),
+        headers,
       });
     }
 
@@ -58,7 +65,8 @@ export async function GET(request: Request, context: RouteContext) {
       headers: {
         "Content-Type": asset.content_type,
         "Content-Length": String(result.blob.size),
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        "Cache-Control": browserCacheControl,
+        "Vercel-CDN-Cache-Control": vercelCdnCacheControl,
         "X-Content-Type-Options": "nosniff",
         ETag: result.blob.etag,
       },

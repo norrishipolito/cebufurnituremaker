@@ -4,11 +4,11 @@ import { useState } from "react";
 import {
   motion,
   useMotionValueEvent,
-  useScroll,
   useSpring,
   useTransform,
 } from "framer-motion";
 import { CebuFurnitureMakerLogo } from "@/components/logo/cebu-furniture-maker-logo";
+import { useSyncedScrollY } from "@/hooks/use-synced-scroll-y";
 interface HeroLogoProps {
   /** Whether user has previously scrolled down (prevents animation on scroll back up) */
   hasScrolledDown?: boolean;
@@ -26,7 +26,7 @@ interface HeroLogoProps {
  * Z-index: 50 (below mobile menu z-200, above hero content)
  */
 export function HeroLogo({ hasScrolledDown = false }: HeroLogoProps) {
-  const { scrollY } = useScroll();
+  const scrollY = useSyncedScrollY();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrollDirection, setScrollDirection] = useState<"up" | "down">("down");
 

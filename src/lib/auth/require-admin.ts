@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { canManageUsers, isAdminRole, type AdminProfile, type AdminRole } from "./roles";
 import { createDbClient } from "@/lib/db/client";
@@ -11,47 +12,58 @@ export interface AuthResult {
   userId: string;
 }
 
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
 export async function getCurrentAdminProfile(): Promise<AuthResult | null> {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    return null;
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
-
-  const db = createDbClient();
-
-  if (!db) {
-    return null;
-  }
-
-  const [profile] = await db
-    .select({
-      id: profiles.id,
-      email: profiles.email,
-      display_name: profiles.display_name,
-      role: profiles.role,
-    })
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
-
-  if (!profile || !isAdminRole(profile.role)) {
-    return null;
-  }
-
-  return {
-    userId: user.id,
-    profile: profile as AdminProfile,
-  };
+  return getCurrentAdminProfileForRequest(await cookies());
 }
+
+const getCurrentAdminProfileForRequest = cache(
+  async function getCurrentAdminProfileForRequest(
+    cookieStore: CookieStore
+  ): Promise<AuthResult | null> {
+    void cookieStore;
+
+    const supabase = await createSupabaseServerClient();
+
+    if (!supabase) {
+      return null;
+    }
+
+    const { data, error } = await supabase.auth.getClaims();
+    const userId = data?.claims.sub;
+
+    if (error || !userId) {
+      return null;
+    }
+
+    const db = createDbClient();
+
+    if (!db) {
+      return null;
+    }
+
+    const [profile] = await db
+      .select({
+        id: profiles.id,
+        email: profiles.email,
+        display_name: profiles.display_name,
+        role: profiles.role,
+      })
+      .from(profiles)
+      .where(eq(profiles.id, userId))
+      .limit(1);
+
+    if (!profile || !isAdminRole(profile.role)) {
+      return null;
+    }
+
+    return {
+      userId,
+      profile: profile as AdminProfile,
+    };
+  }
+);
 
 async function hasMismatchedOrigin() {
   const headerStore = await headers();

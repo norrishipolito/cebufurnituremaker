@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Eye, Link as LinkIcon, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -212,6 +212,297 @@ function SectionCard({
         </form>
       ) : null}
     </section>
+  );
+}
+
+function FooterEditor({
+  footer,
+  setFooter,
+}: {
+  footer: FooterContent;
+  setFooter: React.Dispatch<React.SetStateAction<FooterContent>>;
+}) {
+  const supportedSocials = ["Facebook", "Instagram", "Twitter"];
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+      <div className="space-y-5">
+        <div className="space-y-4">
+          <Field label="Footer brand description">
+            <Textarea
+              value={footer.brand}
+              placeholder="Footer brand description (ex. Handcrafted furniture designed and built in Cebu.)"
+              onChange={(value) =>
+                setFooter((current) => ({ ...current, brand: value }))
+              }
+            />
+          </Field>
+        </div>
+
+        <div className="space-y-3 border-t pt-4 dark:border-gray-800">
+          <div className="flex items-center gap-2">
+            <LinkIcon className="size-4 text-gray-500" />
+            <h3 className="text-sm font-semibold">Social links</h3>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {supportedSocials.map((label) => {
+              const link =
+                footer.socialLinks.find(
+                  (item) => item.label.toLowerCase() === label.toLowerCase()
+                ) ?? { label, href: "" };
+
+              return (
+                <Field key={label} label={`${label} URL`}>
+                  <Input
+                    value={link.href}
+                    placeholder={`https://${label.toLowerCase()}.com/cebufurnituremaker`}
+                    onChange={(event) =>
+                      setFooter((current) => ({
+                        ...current,
+                        socialLinks: updateSocialLink(
+                          current.socialLinks,
+                          label,
+                          event.target.value
+                        ),
+                      }))
+                    }
+                  />
+                </Field>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-4 border-t pt-4 dark:border-gray-800">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <LinkIcon className="size-4 text-gray-500" />
+              <h3 className="text-sm font-semibold">Footer columns</h3>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setFooter((current) => ({
+                  ...current,
+                  columns: [...current.columns, { title: "", links: [] }],
+                }))
+              }
+            >
+              <Plus />
+              Add column
+            </Button>
+          </div>
+
+          {footer.columns.length ? (
+            footer.columns.map((column, columnIndex) => (
+              <div
+                key={columnIndex}
+                className="space-y-3 border-t pt-4 first:border-t-0 first:pt-0 dark:border-gray-800"
+              >
+                <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+                  <Field label={`Column ${columnIndex + 1} title`}>
+                    <Input
+                      value={column.title}
+                      placeholder="Column title (ex. Company)"
+                      onChange={(event) =>
+                        setFooter((current) => ({
+                          ...current,
+                          columns: current.columns.map((item, itemIndex) =>
+                            itemIndex === columnIndex
+                              ? { ...item, title: event.target.value }
+                              : item
+                          ),
+                        }))
+                      }
+                    />
+                  </Field>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="self-end"
+                    aria-label={`Remove footer column ${columnIndex + 1}`}
+                    onClick={() =>
+                      setFooter((current) => ({
+                        ...current,
+                        columns: current.columns.filter(
+                          (_item, itemIndex) => itemIndex !== columnIndex
+                        ),
+                      }))
+                    }
+                  >
+                    <Trash2 />
+                    Remove column
+                  </Button>
+                </div>
+
+                {column.links.length ? (
+                  <div className="space-y-3">
+                    {column.links.map((link, linkIndex) => (
+                      <div
+                        key={linkIndex}
+                        className="grid gap-3 md:grid-cols-[1fr_1fr_auto]"
+                      >
+                        <Field label={`Link ${linkIndex + 1} label`}>
+                          <Input
+                            value={link.label}
+                            placeholder="Link label (ex. About Us)"
+                            onChange={(event) =>
+                              setFooter((current) => ({
+                                ...current,
+                                columns: current.columns.map((item, itemIndex) =>
+                                  itemIndex === columnIndex
+                                    ? {
+                                        ...item,
+                                        links: item.links.map(
+                                          (footerLink, footerLinkIndex) =>
+                                            footerLinkIndex === linkIndex
+                                              ? {
+                                                  ...footerLink,
+                                                  label: event.target.value,
+                                                }
+                                              : footerLink
+                                        ),
+                                      }
+                                    : item
+                                ),
+                              }))
+                            }
+                          />
+                        </Field>
+                        <Field label={`Link ${linkIndex + 1} URL`}>
+                          <Input
+                            value={link.href}
+                            placeholder="Link URL (ex. /about)"
+                            onChange={(event) =>
+                              setFooter((current) => ({
+                                ...current,
+                                columns: current.columns.map((item, itemIndex) =>
+                                  itemIndex === columnIndex
+                                    ? {
+                                        ...item,
+                                        links: item.links.map(
+                                          (footerLink, footerLinkIndex) =>
+                                            footerLinkIndex === linkIndex
+                                              ? {
+                                                  ...footerLink,
+                                                  href: event.target.value,
+                                                }
+                                              : footerLink
+                                        ),
+                                      }
+                                    : item
+                                ),
+                              }))
+                            }
+                          />
+                        </Field>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="self-end"
+                          aria-label={`Remove link ${linkIndex + 1} from footer column ${columnIndex + 1}`}
+                          onClick={() =>
+                            setFooter((current) => ({
+                              ...current,
+                              columns: current.columns.map((item, itemIndex) =>
+                                itemIndex === columnIndex
+                                  ? {
+                                      ...item,
+                                      links: item.links.filter(
+                                        (_footerLink, footerLinkIndex) =>
+                                          footerLinkIndex !== linkIndex
+                                      ),
+                                    }
+                                  : item
+                              ),
+                            }))
+                          }
+                        >
+                          <Trash2 />
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
+                    This column has no links.
+                  </p>
+                )}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setFooter((current) => ({
+                      ...current,
+                      columns: current.columns.map((item, itemIndex) =>
+                        itemIndex === columnIndex
+                          ? {
+                              ...item,
+                              links: [...item.links, { label: "", href: "" }],
+                            }
+                          : item
+                      ),
+                    }))
+                  }
+                >
+                  <Plus />
+                  Add link
+                </Button>
+              </div>
+            ))
+          ) : (
+            <p className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
+              No footer columns yet.
+            </p>
+          )}
+        </div>
+      </div>
+
+      <aside className="h-fit border-t pt-4 dark:border-gray-800 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+        <div className="mb-3 flex items-center gap-2">
+          <Eye className="size-4 text-gray-500" />
+          <h3 className="text-sm font-semibold">Preview</h3>
+        </div>
+        <div className="space-y-4 rounded-md bg-gray-50 p-4 text-sm dark:bg-gray-800/60">
+          <p className="text-gray-700 dark:text-gray-300">
+            {footer.brand || "Brand description"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {supportedSocials.map((label) => {
+              const social = footer.socialLinks.find(
+                (item) => item.label.toLowerCase() === label.toLowerCase()
+              );
+
+              return social?.href ? (
+                <span
+                  key={label}
+                  className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                  {label}
+                </span>
+              ) : null;
+            })}
+          </div>
+          <div className="grid gap-3">
+            {footer.columns.map((column, index) => (
+              <div key={`${column.title}-${index}`}>
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  {column.title || `Column ${index + 1}`}
+                </p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {column.links.length} {column.links.length === 1 ? "link" : "links"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }
 
@@ -630,199 +921,7 @@ export function ContentSectionEditor({
         status={statuses.footer}
         onSubmit={() => saveSection("footer", footer)}
       >
-        <Field label="Footer brand description">
-          <Textarea
-            value={footer.brand}
-            placeholder="Footer brand description (ex. Handcrafted furniture designed and built in Cebu.)"
-            onChange={(value) =>
-              setFooter((current) => ({ ...current, brand: value }))
-            }
-          />
-        </Field>
-        <div className="space-y-3 rounded-md border p-3 dark:border-gray-800">
-          <h3 className="text-sm font-semibold">Footer social links</h3>
-          <div className="grid gap-3 md:grid-cols-3">
-            {["Facebook", "Instagram", "Twitter"].map((label) => {
-              const link =
-                footer.socialLinks.find(
-                  (item) => item.label.toLowerCase() === label.toLowerCase()
-                ) ?? { label, href: "" };
-
-              return (
-                <Field key={label} label={`${label} URL`}>
-                  <Input
-                    value={link.href}
-                    placeholder={`${label} URL (ex. https://${label.toLowerCase()}.com/cebufurnituremaker)`}
-                    onChange={(event) =>
-                      setFooter((current) => ({
-                        ...current,
-                        socialLinks: updateSocialLink(
-                          current.socialLinks,
-                          label,
-                          event.target.value
-                        ),
-                      }))
-                    }
-                  />
-                </Field>
-              );
-            })}
-          </div>
-        </div>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold">Footer columns</h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setFooter((current) => ({
-                  ...current,
-                  columns: [...current.columns, { title: "", links: [] }],
-                }))
-              }
-            >
-              Add column
-            </Button>
-          </div>
-          {footer.columns.map((column, columnIndex) => (
-            <div key={columnIndex} className="space-y-3 rounded-md border p-3">
-              <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                <Field label="Column title">
-                  <Input
-                    value={column.title}
-                    placeholder="Column title (ex. Company)"
-                    onChange={(event) =>
-                      setFooter((current) => ({
-                        ...current,
-                        columns: current.columns.map((item, itemIndex) =>
-                          itemIndex === columnIndex
-                            ? { ...item, title: event.target.value }
-                            : item
-                        ),
-                      }))
-                    }
-                  />
-                </Field>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="self-end"
-                  onClick={() =>
-                    setFooter((current) => ({
-                      ...current,
-                      columns: current.columns.filter(
-                        (_item, itemIndex) => itemIndex !== columnIndex
-                      ),
-                    }))
-                  }
-                >
-                  Remove column
-                </Button>
-              </div>
-              {column.links.map((link, linkIndex) => (
-                <div key={linkIndex} className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                  <Field label="Link label">
-                    <Input
-                      value={link.label}
-                      placeholder="Link label (ex. About Us)"
-                      onChange={(event) =>
-                        setFooter((current) => ({
-                          ...current,
-                          columns: current.columns.map((item, itemIndex) =>
-                            itemIndex === columnIndex
-                              ? {
-                                  ...item,
-                                  links: item.links.map((footerLink, footerLinkIndex) =>
-                                    footerLinkIndex === linkIndex
-                                      ? {
-                                          ...footerLink,
-                                          label: event.target.value,
-                                        }
-                                      : footerLink
-                                  ),
-                                }
-                              : item
-                          ),
-                        }))
-                      }
-                    />
-                  </Field>
-                  <Field label="Link URL">
-                    <Input
-                      value={link.href}
-                      placeholder="Link URL (ex. /about)"
-                      onChange={(event) =>
-                        setFooter((current) => ({
-                          ...current,
-                          columns: current.columns.map((item, itemIndex) =>
-                            itemIndex === columnIndex
-                              ? {
-                                  ...item,
-                                  links: item.links.map((footerLink, footerLinkIndex) =>
-                                    footerLinkIndex === linkIndex
-                                      ? {
-                                          ...footerLink,
-                                          href: event.target.value,
-                                        }
-                                      : footerLink
-                                  ),
-                                }
-                              : item
-                          ),
-                        }))
-                      }
-                    />
-                  </Field>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="self-end"
-                    onClick={() =>
-                      setFooter((current) => ({
-                        ...current,
-                        columns: current.columns.map((item, itemIndex) =>
-                          itemIndex === columnIndex
-                            ? {
-                                ...item,
-                                links: item.links.filter(
-                                  (_footerLink, footerLinkIndex) =>
-                                    footerLinkIndex !== linkIndex
-                                ),
-                              }
-                            : item
-                        ),
-                      }))
-                    }
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setFooter((current) => ({
-                    ...current,
-                    columns: current.columns.map((item, itemIndex) =>
-                      itemIndex === columnIndex
-                        ? {
-                            ...item,
-                            links: [...item.links, { label: "", href: "" }],
-                          }
-                        : item
-                    ),
-                  }))
-                }
-              >
-                Add link
-              </Button>
-            </div>
-          ))}
-        </div>
+        <FooterEditor footer={footer} setFooter={setFooter} />
       </SectionCard>
     </div>
   );

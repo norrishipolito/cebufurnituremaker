@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { AdminPageShell } from "../_components/admin-page-shell";
-import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
+import { AdminPageShell } from "../../_components/admin-page-shell";
 import { defaultSiteContent, type SiteSectionKey } from "@/lib/default-site-content";
 import { getSiteSection } from "@/lib/site-content/queries";
 import { ContentSectionEditor } from "@/features/admin/content/components/content-section-editor";
@@ -8,12 +6,6 @@ import { ContentSectionEditor } from "@/features/admin/content/components/conten
 const sections: SiteSectionKey[] = ["hero", "about", "contact", "footer"];
 
 export default async function AdminContentPage() {
-  const auth = await getCurrentAdminProfile();
-
-  if (!auth) {
-    redirect("/admin/login");
-  }
-
   const sectionData = await Promise.all(
     sections.map(async (sectionKey) => ({
       sectionKey,

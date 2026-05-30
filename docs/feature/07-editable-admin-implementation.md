@@ -27,29 +27,34 @@ src/
 |-- app/
 |   |-- admin/
 |   |   |-- layout.tsx
-|   |   |-- page.tsx
 |   |   |-- login/
 |   |   |   `-- page.tsx
-|   |   |-- content/
-|   |   |   `-- page.tsx
-|   |   |-- projects/
+|   |   |-- (protected)/
+|   |   |   |-- layout.tsx
+|   |   |   |-- loading.tsx
 |   |   |   |-- page.tsx
-|   |   |   `-- [id]/
+|   |   |   |-- content/
+|   |   |   |   `-- page.tsx
+|   |   |   |-- projects/
+|   |   |   |   |-- page.tsx
+|   |   |   |   `-- [id]/
+|   |   |   |       `-- page.tsx
+|   |   |   |-- testimonials/
+|   |   |   |   `-- page.tsx
+|   |   |   |-- media/
+|   |   |   |   `-- page.tsx
+|   |   |   |-- documentation/
+|   |   |   |   `-- page.tsx
+|   |   |   |-- settings/
+|   |   |   |   `-- page.tsx
+|   |   |   `-- users/
 |   |   |       `-- page.tsx
-|   |   |-- testimonials/
-|   |   |   `-- page.tsx
-|   |   |-- media/
-|   |   |   `-- page.tsx
-|   |   |-- documentation/
-|   |   |   `-- page.tsx
-|   |   |-- settings/
-|   |   |   `-- page.tsx
-|   |   |-- users/
-|   |   |   `-- page.tsx
 |   |   `-- _components/
 |   |       |-- admin-chrome.tsx
 |   |       |-- admin-header.tsx
+|   |       |-- admin-navigation.tsx
 |   |       |-- admin-page-shell.tsx
+|   |       |-- admin-route-prefetcher.tsx
 |   |       |-- admin-sidebar.tsx
 |   |       |-- admin-sign-out-button.tsx
 |   |       |-- admin-theme-provider.tsx
@@ -148,7 +153,7 @@ playwright.config.ts
 - Add a Next.js proxy that rewrites the configured admin hostname to `/admin` while preserving paths.
 - Add server-side RBAC checks in every admin page and route handler.
 - Update public landing sections to consume typed content helpers instead of importing static feature data directly.
-- Mark the landing page as dynamic so saved admin edits are read on request and reflected publicly after content mutations.
+- Cache the landing page and public project detail pages with one-hour ISR, then invalidate both after public-facing content mutations.
 - Keep the current component architecture rule: admin page layout components belong in `app/admin/_components`, while reusable admin sub-components belong in `features/admin`.
 
 ## Default Empty-Database Behavior
@@ -365,7 +370,7 @@ Validation rules:
 - Validate image MIME type, image size, and required alt text before Vercel Blob upload.
 - Validate uploaded image file signatures so spoofed MIME types are rejected.
 - Return `400` for invalid input, `401` for unauthenticated access, `403` for unauthorized access, and `404` for missing entities.
-- Call `revalidatePath("/")` after mutations that affect public pages.
+- Call the shared public-site invalidation helper after mutations that affect the homepage or public project detail pages, including asset alt-text edits.
 
 ## Image Handling
 
@@ -387,6 +392,9 @@ Recommended constraints:
 - Start with a 5 MB max file size.
 - Require alt text for public images.
 - Private blob reads should only serve registered image assets and should return generic errors to clients.
+- UUID-versioned uploads should set a long Blob cache lifetime.
+- Private public-image responses should preserve ETags and send short browser caching plus longer `Vercel-CDN-Cache-Control` caching with stale-while-revalidate.
+- Public and admin rendering should use the shared asset resolver so stored absolute URLs stay compatible while private or legacy records use `/api/blob/...`.
 - Asset deletion should be blocked while the asset is still attached to projects, testimonials, or project asset links.
 
 `next.config.ts` must allow the Vercel Blob image host used by deployment.
@@ -397,6 +405,8 @@ Blob access can be public or private. This app supports both:
 - `BLOB_ACCESS=public` uploads with `access: "public"` and stores the direct public blob URL.
 
 If the Vercel Blob store was created as private, `BLOB_ACCESS` must be `private`. Vercel rejects `access: "public"` on a private store.
+
+The current deployment keeps `BLOB_ACCESS=private`. Public images still route through `/api/blob/[...pathname]`, which verifies the registered asset before serving a CDN-cacheable response.
 
 ## Admin UX
 
@@ -413,6 +423,12 @@ Initial admin pages:
 - Documentation: authenticated admin manual with a table-of-contents sidebar, page-by-page workflow guidance, sample inputs, and visual UI previews.
 - The Documentation page must hide admin-only `Users` and `Settings` manual sections from maintainers.
 - The desktop sidebar includes a bottom `Documentation` link.
+- Admin login, sign-out, sidebar, and dashboard navigation keep the clicked controls pending while server-authenticated route changes are resolving so deployed pages do not appear idle or re-enabled mid-transition. Admin route changes should not show a global horizontal progress bar.
+- Supabase session refresh in the proxy is scoped to authenticated admin/admin API routes so public pages do not pay an auth network round trip on every request.
+- Admin profile lookup is request-cached so the authenticated layout and matching page do not repeat the same Supabase/profile queries during one render.
+- Authenticated admin pages live under an internal `(protected)` route group so `/admin/login` does not fetch or reuse the authenticated admin chrome/profile layout.
+- Admin auth verification uses Supabase `getClaims()` instead of `getUser()` so deployments with asymmetric JWT signing keys can validate access tokens locally or from the cached JWKS path instead of calling Supabase Auth on every navigation.
+- Sidebar and dashboard admin links prefetch on idle, hover, and focus, and protected admin routes expose a content loading skeleton while server data resolves.
 
 The admin should be practical and dense rather than marketing-like. Use existing UI primitives and keep forms predictable.
 The desktop admin sidebar should stay sticky and must not have its own scrollable container.
@@ -431,7 +447,7 @@ Content editor field expectations:
 - The About showcase description should appear below the showcase title and showcase image URL fields.
 - The admin header includes a dark mode toggle for authenticated users, and the chosen admin theme is persisted in local storage.
 
-Save actions call the matching section endpoint and should revalidate the public homepage so changes appear after saving.
+Save actions call the matching section endpoint and should invalidate the cached public homepage and project detail pages so changes appear after saving.
 
 Editable placeholder rules:
 
@@ -441,22 +457,18 @@ Editable placeholder rules:
 - Repeatable placeholder rows, such as hero features, footer columns, and footer links, must be removable.
 - Inputs should show examples through placeholders, such as `Category (ex. Dining Room)`.
 
-Project group rules:
+Project grouping rules:
 
-- Project groups are editable text values, not a fixed enum.
-- The admin project form should let editors type a new group, for example `custom_builds`.
-- The public project tabs should be generated from the saved project groups.
-- Known legacy groups may be displayed with friendly labels:
-  - `products` -> `Products`
-  - `showroom` -> `Showroom`
-  - `fabrication_site` -> `Fabrication Site`
-- Unknown groups should be title-cased for display, for example `custom_builds` -> `Custom Builds`.
+- Project grouping/type controls are retired from the admin editor and public UI.
+- The public Projects section renders all published projects together in one polished grid with no tabs.
+- The existing `projects.group` database column remains for compatibility only.
+- New project writes from the editor and API default `projects.group` to `projects` when the client does not provide a value.
 
 Project CRUD rules:
 
 - The project admin UI must expose create, edit, delete, publish/unpublish, image attachment, and sorting controls.
 - The project visibility checkbox should be labeled `Show in Projects section` and should write to `projects.published`.
-- The public Projects component should show saved project groups as tabs. Editors should use the saved group tab to review newly added public projects.
+- The public Projects component should show saved public projects together in one grid. Editors review newly added public projects in that single Projects section.
 - Project create/edit forms must include an image upload input and image alt text input. The UI uploads the image through `POST /api/admin/assets/upload` and saves the returned asset ID as `projects.primary_asset_id`.
 - Project create/edit forms support selecting multiple safe image files at once. Uploaded images are attached to the saved project through `project_assets`, shown as thumbnail previews in the admin list, and can be detached from the project without deleting the media asset.
 - Uploaded project images must be loaded by public project queries with nested `primary_asset` data so saved images appear on the landing page.
@@ -569,7 +581,7 @@ Test files:
 
 Scenarios:
 
-- Empty database still renders the public homepage through runtime defaults. If database rows exist, tests should verify stable editable sections and project tabs rather than hard-coded starter copy.
+- Empty database still renders the public homepage through runtime defaults. If database rows exist, tests should verify stable editable sections and the single public Projects grid rather than hard-coded starter copy.
 - Admin subdomain rewrites to `/admin`.
 - Logged-out users are redirected to login.
 - The login page does not show the admin header, sidebar, or admin navigation links.

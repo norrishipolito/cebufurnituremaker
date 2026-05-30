@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AdminPageShell } from "./_components/admin-page-shell";
+import { AdminPageShell } from "../_components/admin-page-shell";
+import { AdminNavLink } from "../_components/admin-navigation";
 import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { canManageUsers } from "@/lib/auth/roles";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default async function AdminDashboardPage() {
               {card.text}
             </p>
             <Button asChild variant="outline" size="sm" className="mt-4">
-              <Link href={card.href}>Open</Link>
+              <AdminNavLink href={card.href}>Open</AdminNavLink>
             </Button>
           </div>
         ))}

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   BookOpen,
   FolderKanban,
@@ -12,6 +11,8 @@ import {
 import type { AdminProfile } from "@/lib/auth/roles";
 import { canManageSettings, canManageUsers } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
+import { AdminNavLink } from "./admin-navigation";
+import { AdminRoutePrefetcher } from "./admin-route-prefetcher";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -43,6 +44,10 @@ export function AdminSidebar({
       ? canManageUsers(profile.role) && canManageSettings(profile.role)
       : false;
   });
+  const prefetchHrefs = [
+    ...visibleItems.map((item) => item.href),
+    ...supportNavItems.map((item) => item.href),
+  ];
 
   return (
     <aside
@@ -51,31 +56,32 @@ export function AdminSidebar({
         className
       )}
     >
-      <Link href="/admin" className="mb-6 block px-3 text-sm font-semibold">
+      <AdminRoutePrefetcher hrefs={prefetchHrefs} />
+      <AdminNavLink href="/admin" className="mb-6 block px-3 text-sm font-semibold">
         Cebu Furniture Admin
-      </Link>
+      </AdminNavLink>
       <nav className="space-y-1">
         {visibleItems.map((item) => (
-          <Link
+          <AdminNavLink
             key={item.href}
             href={item.href}
             className="flex h-9 items-center gap-3 rounded-md px-3 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900"
           >
             <item.icon className="h-4 w-4" />
             {item.label}
-          </Link>
+          </AdminNavLink>
         ))}
       </nav>
       <nav className="mt-auto border-t border-gray-200 pt-3 dark:border-gray-800">
         {supportNavItems.map((item) => (
-          <Link
+          <AdminNavLink
             key={item.href}
             href={item.href}
             className="flex h-9 items-center gap-3 rounded-md px-3 text-sm text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900"
           >
             <item.icon className="h-4 w-4" />
             {item.label}
-          </Link>
+          </AdminNavLink>
         ))}
       </nav>
     </aside>

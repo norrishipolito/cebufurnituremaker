@@ -5,8 +5,8 @@ import { jsonError, missingServiceConfig } from "@/lib/api/responses";
 import { getRequiredServiceClient, revalidatePublicSite, writeAuditLog } from "@/lib/site-content/mutations";
 import { testimonialInputSchema } from "@/lib/site-content/validators";
 import { createDbClient } from "@/lib/db/client";
-import { testimonials } from "@/lib/db/schema";
-import { asc } from "drizzle-orm";
+import { assets, testimonials } from "@/lib/db/schema";
+import { asc, eq } from "drizzle-orm";
 
 export async function GET() {
   const guard = await requireAdmin();
@@ -25,13 +25,23 @@ export async function GET() {
   }
 
   const data = await db
-    .select()
+    .select({
+      testimonial: testimonials,
+      avatar: assets,
+    })
     .from(testimonials)
+    .leftJoin(assets, eq(testimonials.avatar_asset_id, assets.id))
     .orderBy(asc(testimonials.sort_order));
+  const mappedTestimonials = data.map((row) => ({
+    ...row.testimonial,
+    avatar: row.avatar,
+  }));
 
   return NextResponse.json({
-    testimonials: data?.length ? data : defaultSiteContent.testimonials,
-    source: data?.length ? "database" : "default",
+    testimonials: mappedTestimonials.length
+      ? mappedTestimonials
+      : defaultSiteContent.testimonials,
+    source: mappedTestimonials.length ? "database" : "default",
   });
 }
 

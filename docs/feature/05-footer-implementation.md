@@ -368,6 +368,10 @@ Edit the Footer section in `/admin/content`:
 - Facebook URL
 - Instagram URL
 - Twitter URL
+- Brand description
+- Repeatable footer columns and links
+
+The admin footer editor groups brand copy, supported social URLs, repeatable columns/links, and a compact preview into friendly form controls. Editors can add/remove columns and links without editing JSON.
 
 The public footer intentionally supports those three platforms only. GitHub should not appear unless a future feature explicitly expands the supported platform list.
 

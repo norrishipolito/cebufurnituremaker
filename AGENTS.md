@@ -19,12 +19,13 @@ Modern agent setup:
 
 Important standing rules:
 
+- Research relevant current documentation and primary sources before implementing. Do not rely only on assumptions or remembered platform behavior.
 - Keep documentation synchronized with implementation changes.
 - Keep feature plans updated as implementation changes.
 - Editable content must have default fallbacks for an empty database.
 - Admin content editing must use friendly form controls, not raw JSON.
 - Placeholder text/images must be clearable after content is saved; do not force defaults back into saved empty fields.
-- Project groups are editor-created text values, not a fixed enum.
+- Project grouping/type controls are retired from the editor and public UI; keep `projects.group` only as an internal compatibility field defaulted to `projects`.
 - App database tables use Drizzle ORM; do not add manual Supabase SQL setup for schema changes.
 - Supabase uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`; legacy anon/service-role names are fallback only.
 - `DATABASE_URL` is required for ORM-backed server reads and writes.

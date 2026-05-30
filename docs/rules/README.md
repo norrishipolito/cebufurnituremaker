@@ -21,6 +21,10 @@ These rules complement, and do not replace:
 - `docs/02-feature-implementation-rules.md`
 - The relevant plan in `docs/feature/`
 
+## Research Before Implementation
+
+Research relevant current documentation and primary sources before implementing. Prefer official framework, platform, API, and security documentation when behavior may have changed. Inspect repository history, deployment evidence, or runtime behavior when they are relevant to the request.
+
 ## Documentation Sync Rule
 
 Whenever implementation behavior changes, update the matching docs in the same change. At minimum, check:
@@ -29,4 +33,3 @@ Whenever implementation behavior changes, update the matching docs in the same c
 - `docs/02-feature-implementation-rules.md`
 - The relevant `docs/feature/*.md`
 - `docs/03-chat-implementation-summary.md` when the change affects future work broadly
-

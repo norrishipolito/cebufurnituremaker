@@ -8,6 +8,7 @@ const allowedImageTypes = new Set([
 ]);
 
 export const maxImageSizeBytes = 5 * 1024 * 1024;
+export const blobCacheControlMaxAge = 60 * 60 * 24 * 365;
 export type BlobAccess = "public" | "private";
 
 export function getBlobAccess(): BlobAccess {
@@ -88,6 +89,7 @@ export async function uploadImageToBlob(file: File, pathname: string) {
 
   return put(pathname, file, {
     access: getBlobAccess(),
+    cacheControlMaxAge: blobCacheControlMaxAge,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 }

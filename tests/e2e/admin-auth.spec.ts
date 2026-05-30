@@ -28,6 +28,56 @@ test("signed-in admin can sign out from the admin header", async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/login/);
 });
 
+test("admin navigation keeps clicked links pending without a global loader", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "The sidebar is desktop-only.");
+
+  const releaseRoutes: Array<() => void> = [];
+  let shouldDelayContent = true;
+
+  await page.route("**/admin/content**", async (route) => {
+    if (shouldDelayContent) {
+      await new Promise<void>((resolve) => {
+        releaseRoutes.push(resolve);
+      });
+    }
+
+    await route.continue();
+  });
+
+  await loginAsAdmin(page);
+
+  const contentLink = page
+    .locator("aside")
+    .first()
+    .getByRole("link", { name: "Content" });
+  const navigation = page
+    .locator("aside")
+    .first()
+    .getByRole("link", { name: "Content" })
+    .click();
+
+  await expect(contentLink).toHaveAttribute("aria-busy", "true");
+  await expect(
+    page.getByRole("status", { name: "Loading admin page" })
+  ).toHaveCount(0);
+  await expect.poll(() => releaseRoutes.length).toBeGreaterThan(0);
+
+  shouldDelayContent = false;
+  for (const releaseRoute of releaseRoutes.splice(0)) {
+    releaseRoute();
+  }
+
+  await navigation;
+  await expect(page).toHaveURL(/\/admin\/content/);
+  await expect(contentLink).not.toHaveAttribute("aria-busy", "true");
+  await expect(
+    page.getByRole("status", { name: "Loading admin page" })
+  ).toHaveCount(0);
+});
+
 test("signed-in admin can toggle dark mode", async ({ page }) => {
   await page.goto("/admin/login");
   await page.evaluate(() => {

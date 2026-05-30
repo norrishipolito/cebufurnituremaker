@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/common/layouts/footer";
 import { ProjectCta } from "@/components/shadcn-space/blocks/cta-01/cta";
 import { ProjectImageCarousel } from "@/features/home/projects/components/project-image-carousel";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { getPublicProjectBySlug } from "@/lib/site-content/queries";
 
 interface ProjectDetailPageProps {
@@ -21,7 +22,6 @@ interface PublicProjectDetail {
   title: string;
   description: string;
   category: string;
-  group?: string;
   primary_asset?: {
     blob_url?: string | null;
     blob_pathname?: string | null;
@@ -29,22 +29,7 @@ interface PublicProjectDetail {
   } | null;
 }
 
-const groupLabels: Record<string, string> = {
-  products: "Products",
-  showroom: "Showroom",
-  fabrication_site: "Fabrication Site",
-};
-
-function toGroupLabel(group: string) {
-  return (
-    groupLabels[group] ??
-    group
-      .replace(/[_-]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (letter) => letter.toUpperCase())
-  );
-}
+export const revalidate = 3600;
 
 export default async function ProjectDetailPage({
   params,
@@ -57,16 +42,14 @@ export default async function ProjectDetailPage({
   }
 
   const project = result.project as PublicProjectDetail;
-  const primaryImage = project.primary_asset?.blob_pathname
-    ? `/api/blob/${project.primary_asset.blob_pathname}`
-    : project.primary_asset?.blob_url ?? project.image ?? "";
+  const primaryImage =
+    getAssetDeliveryUrl(project.primary_asset) || project.image || "";
   const images =
     project.images?.length
       ? project.images
       : primaryImage
         ? [{ url: primaryImage, alt: project.primary_asset?.alt_text ?? project.title }]
         : [];
-  const groupLabel = toGroupLabel(project.group ?? "products");
 
   return (
     <>
@@ -83,7 +66,7 @@ export default async function ProjectDetailPage({
               <ProjectImageCarousel
                 images={images}
                 title={project.title}
-                priority
+                preload
                 className="overflow-hidden rounded-lg"
                 imageClassName="lg:min-h-[620px]"
                 sizes="(max-width: 1024px) 100vw, 58vw"
@@ -115,9 +98,11 @@ export default async function ProjectDetailPage({
                   </div>
                   <div className="rounded-md border border-gray-200 p-4 dark:border-gray-800">
                     <dt className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                      Project Type
+                      Gallery
                     </dt>
-                    <dd className="mt-1 text-sm font-medium">{groupLabel}</dd>
+                    <dd className="mt-1 text-sm font-medium">
+                      {images.length || 1} project {images.length === 1 ? "image" : "images"}
+                    </dd>
                   </div>
                 </dl>
                 <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-800">

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AdminPageShell } from "../_components/admin-page-shell";
+import { AdminPageShell } from "../../_components/admin-page-shell";
 import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { canManageSettings } from "@/lib/auth/roles";
 

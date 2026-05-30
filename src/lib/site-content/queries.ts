@@ -1,4 +1,5 @@
 import { defaultSiteContent, getDefaultSection, type SiteSectionKey } from "@/lib/default-site-content";
+import { getAssetDeliveryUrl } from "@/lib/blob/url";
 import { createDbClient } from "@/lib/db/client";
 import { assets, projectAssets, projects, siteSections, testimonials } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
@@ -136,7 +137,7 @@ function buildProjectImages(
     })
     .map((asset) => ({
       id: asset.id,
-      url: asset.blob_pathname ? `/api/blob/${asset.blob_pathname}` : asset.blob_url,
+      url: getAssetDeliveryUrl(asset),
       alt: asset.alt_text,
     }));
 }
@@ -152,8 +153,12 @@ export async function getPublicTestimonials() {
   }
 
   const data = await db
-    .select()
+    .select({
+      testimonial: testimonials,
+      avatar: assets,
+    })
     .from(testimonials)
+    .leftJoin(assets, eq(testimonials.avatar_asset_id, assets.id))
     .where(eq(testimonials.published, true))
     .orderBy(asc(testimonials.sort_order));
 
@@ -164,5 +169,11 @@ export async function getPublicTestimonials() {
     };
   }
 
-  return { testimonials: data, source: "database" as const };
+  return {
+    testimonials: data.map((row) => ({
+      ...row.testimonial,
+      avatar: row.avatar,
+    })),
+    source: "database" as const,
+  };
 }

@@ -187,6 +187,54 @@ test.describe.serial("authenticated admin editing", () => {
     await expect(page.getByTestId("content-editor-hero")).toHaveCount(0);
   });
 
+  test("footer editor manages social links and repeatable columns", async ({
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    await page.goto("/admin/content");
+
+    const originalFooter = await readContentSection(page, "footer");
+    const unique = Date.now();
+    const columnTitle = `E2E Footer Column ${unique}`;
+    const linkLabel = `E2E Footer Link ${unique}`;
+    const linkUrl = `/e2e-footer-${unique}`;
+
+    try {
+      await expandContentSection(page, "Footer");
+      await expect(page.getByRole("heading", { name: "Preview" })).toBeVisible();
+      await page.getByLabel("Twitter URL").fill("");
+      await page.getByRole("button", { name: "Add column" }).click();
+      await page.getByLabel(/^Column \d+ title$/).last().fill(columnTitle);
+      await page.getByRole("button", { name: "Add link" }).last().click();
+      await page.getByLabel(/^Link 1 label$/).last().fill(linkLabel);
+      await page.getByLabel(/^Link 1 URL$/).last().fill(linkUrl);
+      await page.getByRole("button", { name: /save footer/i }).click();
+      await expect(page.getByTestId("content-editor-footer-status")).toHaveText(
+        /saved/i
+      );
+
+      await page.goto("/");
+      await expect(page.getByRole("link", { name: linkLabel })).toHaveAttribute(
+        "href",
+        linkUrl
+      );
+      await expect(page.getByRole("link", { name: "Twitter" })).toHaveCount(0);
+
+      await page.goto("/admin/content");
+      await expandContentSection(page, "Footer");
+      await page.getByRole("button", { name: /Remove footer column/i }).last().click();
+      await page.getByRole("button", { name: /save footer/i }).click();
+      await expect(page.getByTestId("content-editor-footer-status")).toHaveText(
+        /saved/i
+      );
+
+      await page.goto("/");
+      await expect(page.getByRole("link", { name: linkLabel })).toHaveCount(0);
+    } finally {
+      await saveContentSection(page, "footer", originalFooter);
+    }
+  });
+
   test("content editor sections expand and keep showcase description below the showcase title and image", async ({
     page,
   }) => {

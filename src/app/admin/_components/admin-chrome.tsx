@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import type { AdminProfile } from "@/lib/auth/roles";
 import { AdminHeader } from "./admin-header";
+import { AdminNavigationProvider } from "./admin-navigation";
 import { AdminSidebar } from "./admin-sidebar";
 
 export function AdminChrome({
@@ -20,12 +21,14 @@ export function AdminChrome({
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[240px_1fr]">
-      <AdminSidebar className="hidden lg:block" profile={profile} />
-      <div className="min-w-0">
-        <AdminHeader profile={profile} />
-        {children}
+    <AdminNavigationProvider key={pathname}>
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[240px_1fr]">
+        <AdminSidebar className="hidden lg:block" profile={profile} />
+        <div className="min-w-0">
+          <AdminHeader profile={profile} />
+          {children}
+        </div>
       </div>
-    </div>
+    </AdminNavigationProvider>
   );
 }

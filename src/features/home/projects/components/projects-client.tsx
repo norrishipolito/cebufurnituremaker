@@ -1,57 +1,66 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsHeader } from "./projects-header";
-import { ProjectsTabs } from "./projects-tabs";
 import { ProjectDetailDialog } from "./project-detail-dialog";
+import { ProjectNavigationPending } from "./project-navigation-pending";
 import type { Product } from "./projects-data";
 
 export function ProjectsClient({ products }: { products: Product[] }) {
-  const groups = useMemo(() => {
-    const uniqueGroups = new Map<string, string>();
+  const router = useRouter();
+  const [selectedProject, setSelectedProject] = useState<Product | null>(null);
+  const [pendingProject, setPendingProject] = useState<Product | null>(null);
+  const [pendingProjectHref, setPendingProjectHref] = useState<string | null>(null);
 
-    for (const product of products) {
-      if (!uniqueGroups.has(product.group)) {
-        uniqueGroups.set(product.group, product.groupLabel);
-      }
+  useEffect(() => {
+    if (!pendingProjectHref || selectedProject) {
+      return;
     }
 
-    return [...uniqueGroups].map(([value, label]) => ({ value, label }));
-  }, [products]);
-  const [activeTab, setActiveTab] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<Product | null>(null);
-  const currentTab =
-    activeTab && groups.some((group) => group.value === activeTab)
-      ? activeTab
-      : groups[0]?.value ?? "";
+    const frame = window.requestAnimationFrame(() => {
+      router.push(pendingProjectHref);
+      setPendingProjectHref(null);
+    });
 
-  const filteredProducts = useMemo(() => {
-    return currentTab
-      ? products.filter((product) => product.group === currentTab)
-      : products;
-  }, [currentTab, products]);
+    return () => window.cancelAnimationFrame(frame);
+  }, [pendingProjectHref, router, selectedProject]);
+
+  useEffect(() => {
+    if (!pendingProject) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setPendingProject(null);
+      setPendingProjectHref(null);
+    }, 10000);
+
+    return () => window.clearTimeout(timeout);
+  }, [pendingProject]);
 
   return (
     <>
-      <ProjectsHeader />
-      <ProjectsTabs
-        activeTab={currentTab}
-        groups={groups}
-        onTabChange={setActiveTab}
-      />
+      <ProjectsHeader projectCount={products.length} />
       <ProjectsGrid
-        products={filteredProducts}
+        products={products}
         onProjectOpen={setSelectedProject}
       />
       <ProjectDetailDialog
         project={selectedProject}
+        onNavigateToProject={(href) => {
+          setPendingProject(selectedProject);
+          setPendingProjectHref(href);
+          setSelectedProject(null);
+        }}
         onOpenChange={(open) => {
           if (!open) {
             setSelectedProject(null);
           }
         }}
       />
+      <ProjectNavigationPending project={pendingProject} />
     </>
   );
 }

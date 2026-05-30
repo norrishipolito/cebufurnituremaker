@@ -18,7 +18,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
-import { AdminPageShell } from "../_components/admin-page-shell";
+import { AdminPageShell } from "../../_components/admin-page-shell";
 import { getCurrentAdminProfile } from "@/lib/auth/require-admin";
 import { canManageSettings, canManageUsers } from "@/lib/auth/roles";
 
@@ -184,7 +184,7 @@ const pageDocs: PageDoc[] = [
     icon: FolderKanban,
     permission: "Admin and maintainer.",
     purpose:
-      "Creates and manages public project cards, including uploaded images, visibility, groups, and drag ordering.",
+      "Creates and manages public project cards, including uploaded images, visibility, and drag ordering.",
     workflow: [
       "Open `/admin/projects`.",
       "Fill the project form.",
@@ -208,11 +208,6 @@ const pageDocs: PageDoc[] = [
         sample: "Dining Room",
       },
       {
-        label: "Group",
-        sample: "custom_builds",
-        note: "Groups become public tabs. New groups are allowed.",
-      },
-      {
         label: "Description",
         sample: "Solid wood table with hand-finished edges and seating for six.",
       },
@@ -223,6 +218,7 @@ const pageDocs: PageDoc[] = [
     ],
     tips: [
       "Do not use numeric sort inputs. Reorder by dragging.",
+      "Project type/group controls are no longer shown; public projects appear together in one Projects grid.",
       "Deleting removes the project. Unchecking visibility only hides it.",
       "Image upload happens here, not on the Media page.",
     ],
@@ -237,7 +233,7 @@ const pageDocs: PageDoc[] = [
       "Creates and manages customer quotes shown in the public testimonials section.",
     workflow: [
       "Open `/admin/testimonials`.",
-      "Fill name, role, quote, and visibility.",
+      "Fill name, role, quote, optional avatar, and visibility.",
       "Click Create Testimonial.",
       "Edit saved rows directly when needed.",
       "Drag testimonial handles to change display order.",
@@ -255,6 +251,11 @@ const pageDocs: PageDoc[] = [
         label: "Quote",
         sample:
           "The craftsmanship exceeded our expectations and the team made the process easy.",
+      },
+      {
+        label: "Avatar upload",
+        sample: "customer-avatar.png",
+        note: "If no avatar is uploaded, the public card uses the default avatar.",
       },
       {
         label: "Show in Testimonials section",

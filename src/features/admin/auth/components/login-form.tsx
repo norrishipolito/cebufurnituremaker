@@ -12,10 +12,12 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
+    setRedirecting(false);
     setError(null);
 
     try {
@@ -27,17 +29,20 @@ export function LoginForm() {
 
       if (signInError) {
         setError(signInError.message);
+        setLoading(false);
         return;
       }
 
+      setRedirecting(true);
       router.replace("/admin");
-      router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to sign in.");
-    } finally {
+      setRedirecting(false);
       setLoading(false);
     }
   }
+
+  const isBusy = loading || redirecting;
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -56,9 +61,14 @@ export function LoginForm() {
         required
       />
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Signing in..." : "Sign in"}
+      <Button type="submit" className="w-full" disabled={isBusy}>
+        {redirecting ? "Opening admin..." : loading ? "Signing in..." : "Sign in"}
       </Button>
+      {isBusy ? (
+        <p role="status" className="text-center text-xs text-gray-500">
+          {redirecting ? "Loading admin dashboard..." : "Checking credentials..."}
+        </p>
+      ) : null}
     </form>
   );
 }

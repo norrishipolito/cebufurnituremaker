@@ -22,11 +22,13 @@ These rules capture the implementation decisions agreed for Cebu Furniture Maker
 For every feature:
 
 1. Read the relevant files in `docs/feature/`.
-2. Check whether the existing documentation is outdated.
-3. Update the relevant feature plan before or during implementation.
-4. Implement the feature using the existing app architecture.
-5. Add or update Playwright tests for the user-facing behavior.
-6. Run verification before considering the feature complete.
+2. Research relevant current documentation and primary sources before implementing. Prefer official framework, platform, API, and security documentation when behavior may have changed.
+3. Inspect repository history, deployment evidence, or runtime behavior when relevant to the request.
+4. Check whether the existing documentation is outdated.
+5. Update the relevant feature plan before or during implementation, including important research sources when they inform the decision.
+6. Implement the feature using the existing app architecture.
+7. Add or update Playwright tests for the user-facing behavior.
+8. Run verification before considering the feature complete.
 
 Before every implementation task, also read and follow the standing rules in `docs/rules/`.
 
@@ -68,8 +70,8 @@ If a feature is documentation-only, tests are not required, but the doc change s
 - Saving default-backed content should create or update the database row.
 - Deleting or missing section content should fall back to defaults.
 - Once content is saved, editors must be able to clear placeholder text and image URLs without the UI forcing defaults back into those fields.
-- Public-facing content mutations must revalidate the public page.
-- The landing page must remain dynamic when it depends on editable content.
+- Public-facing content mutations must revalidate the cached public pages.
+- The landing page and public project detail pages use one-hour ISR caching and must be invalidated after public-facing mutations.
 - Public pages must recover cleanly after browser back/forward navigation from missing routes; returning from a 404 must not leave the landing page blank.
 
 ## Admin UX Rules
@@ -110,7 +112,7 @@ If a feature is documentation-only, tests are not required, but the doc change s
   - `403` for authenticated users without permission.
   - `404` for missing entities.
   - `503` for missing required backend configuration.
-- Use `revalidatePath("/")` after mutations that affect the public homepage.
+- Use the shared public-site invalidation helper after mutations that affect the homepage or public project detail pages.
 
 ## Database Rules
 
@@ -123,7 +125,7 @@ If a feature is documentation-only, tests are not required, but the doc change s
   - `admin`
   - `maintainer`
 - Store flexible section content as `jsonb` internally when useful, but never make editors write JSON in the admin UI.
-- Project groups are user-editable text values and should not be constrained to the original three placeholder groups.
+- Project grouping/type controls are retired from the editor and public UI. Keep the existing `projects.group` database column only as an internal compatibility field and default new editor writes to `projects`.
 - Enable Row Level Security on public schema tables.
 - Route handlers must still enforce authorization server-side even when RLS exists.
 - Publish/unpublish controls are for public visibility only. If an admin resource supports `DELETE`, the admin UI must include an explicit delete action that removes the record instead of merely hiding it.
@@ -167,10 +169,13 @@ Never expose `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `BLOB_READ_W
 - Use Vercel Blob for uploaded images.
 - Match `BLOB_ACCESS` to the Vercel Blob store access mode.
 - Private Blob stores should upload with `access: "private"` and serve public site images through an app route.
+- UUID-versioned uploads should use a long Blob cache lifetime.
 - Store image metadata in Supabase.
 - Require alt text for public images.
 - Uploaded image content must match its declared safe image MIME type; do not trust file extensions or browser-provided MIME alone.
 - Private blob reads should only serve registered image assets and should not expose internal storage errors to clients.
+- Private public-image responses should keep ETags and expose short browser caching plus longer `Vercel-CDN-Cache-Control` caching with stale-while-revalidate.
+- Resolve saved image URLs through the shared asset resolver so stored absolute URLs remain compatible and private or legacy records fall back to `/api/blob/...`.
 - Asset deletion must not delete blob storage before confirming the asset is not attached to projects, testimonials, or project asset links.
 - Project create/edit forms must include image upload controls so project images can be attached without leaving the project workflow.
 - Media page upload forms are not allowed; the Media page manages existing assets only.
@@ -182,6 +187,7 @@ Never expose `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `BLOB_READ_W
 
 - `/admin` pages require authentication.
 - `/admin/login` must not show the admin header, sidebar, or admin navigation links.
+- Server-side admin identity checks should prefer Supabase `getClaims()` over `getUser()` so asymmetric JWT projects can validate tokens through local/JWKS-backed verification instead of calling Supabase Auth on every navigation.
 - Authenticated admin pages must expose a visible sign-out action.
 - Admin sign-out should clear only the current browser session, not every active session for the same Supabase user.
 - Authenticated admin headers should stay sticky at the top of scrollable admin pages without creating nested page scrolling.

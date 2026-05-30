@@ -4,7 +4,7 @@ import { Contact } from "./_components/contact";
 import { Projects } from "./_components/projects";
 import { Testimonials } from "./_components/testimonials";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default function LandingPage() {
   return (

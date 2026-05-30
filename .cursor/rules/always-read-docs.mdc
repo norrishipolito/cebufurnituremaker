@@ -14,6 +14,8 @@ Before planning or implementing changes in this repository:
 4. Read the relevant feature plan under `docs/feature/`.
 5. If scope is broad or unclear, read all Markdown files under `docs/feature/`.
 
+Research relevant current documentation and primary sources before implementing. Prefer official framework, platform, API, and security documentation when behavior may have changed.
+
 Keep documentation synchronized with implementation changes in the same task.
 
 Key references:
@@ -24,4 +26,3 @@ Key references:
 - @docs/01-component-architecture-rules.md
 - @docs/02-feature-implementation-rules.md
 - @docs/03-chat-implementation-summary.md
-

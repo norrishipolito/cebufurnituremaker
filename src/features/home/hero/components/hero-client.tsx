@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useMotionValueEvent, useScroll, useTransform } from "framer-motion";
+import { useMotionValueEvent, useTransform } from "framer-motion";
 import { HeroBackground } from "./hero-background";
 import { HeroLogo } from "./hero-logo";
 import { HeroContent } from "./hero-content";
 import { HeroFooterBar } from "./hero-footer-bar";
 import type { HeroSectionContent } from "@/app/(landing-page)/_components/hero";
+import { useSyncedScrollY } from "@/hooks/use-synced-scroll-y";
 
 export function HeroClient({ content }: { content: HeroSectionContent }) {
-  const { scrollY } = useScroll();
+  const scrollY = useSyncedScrollY();
   const [hasScrolledDown, setHasScrolledDown] = useState(false);
   const backgroundY = useTransform(scrollY, [0, 500], [0, 200]);
   const contentOpacity = useTransform(scrollY, [0, 300], [1, 0]);

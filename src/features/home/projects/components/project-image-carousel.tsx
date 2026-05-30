@@ -14,7 +14,7 @@ export interface ProjectCarouselImage {
 interface ProjectImageCarouselProps {
   images: ProjectCarouselImage[];
   title: string;
-  priority?: boolean;
+  preload?: boolean;
   className?: string;
   imageClassName?: string;
   thumbnailClassName?: string;
@@ -24,7 +24,7 @@ interface ProjectImageCarouselProps {
 export function ProjectImageCarousel({
   images,
   title,
-  priority = false,
+  preload = false,
   className,
   imageClassName,
   thumbnailClassName,
@@ -96,7 +96,7 @@ export function ProjectImageCarousel({
                   src={activeImage.url}
                   alt={activeImage.alt}
                   fill
-                  priority={priority}
+                  preload={preload}
                   className="object-cover"
                   sizes={sizes}
                 />

@@ -6,6 +6,8 @@ This file compacts the implementation decisions, fixes, and standing rules agree
 
 Before using this summary for implementation, read `AGENTS.md` and every file in `docs/rules/`.
 
+Before implementing, research relevant current documentation and primary sources. Prefer official framework, platform, API, and security documentation when behavior may have changed, and inspect repository history, deployment evidence, or runtime behavior when relevant.
+
 ## Current Stack
 
 - App: Next.js App Router, React, TypeScript, Tailwind CSS.
@@ -24,6 +26,11 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - `/admin/login` must not show admin header, sidebar, or admin navigation.
 - Authenticated admin pages show the admin header, sticky sidebar, and sign-out button.
 - Authenticated admin pages include a Documentation page linked from the bottom of the desktop sidebar. The documentation page should have its own table-of-contents sidebar and page-by-page admin UI instructions.
+- Admin sign-in, sign-out, sidebar links, and dashboard links keep clicked controls pending while server-authenticated route changes are still resolving, without showing a global horizontal route loader.
+- The proxy only refreshes Supabase sessions for authenticated admin/admin API routes, and admin profile lookup is request-cached to avoid duplicated layout/page auth queries.
+- `/admin/login` is outside the internal protected admin route group, so it avoids authenticated chrome/profile work and cannot reuse a stale logged-out admin layout after sign-in.
+- Admin auth verification now uses Supabase `getClaims()` rather than `getUser()` to avoid a Supabase Auth network call on each navigation when asymmetric JWT signing keys are available.
+- Admin routes prefetch from sidebar/dashboard intent and show a protected-route content skeleton while server data resolves.
 - Maintainers must not see admin-only Users or Settings navigation or documentation sections.
 - Maintainers must not see `Users` or `Settings` links.
 - Admins can manage users and assign roles.
@@ -61,13 +68,14 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - Projects have full CRUD in the admin UI.
 - Project images are uploaded from the Projects page, not from Media.
 - Project visibility uses an editor-facing checkbox for showing in the public Projects section.
-- Project groups are editable text values. They are not limited to the original placeholder groups.
+- Project grouping/type controls are retired from the editor and public UI. Projects now render as one public `Projects` grid, while `projects.group` remains only as an internal compatibility field defaulted to `projects`.
 - Project sorting is drag-based. Do not expose numeric sort-order inputs.
 - Dragging should show a visible drag state and live list adjustment.
 
 ## Testimonials Rules
 
 - Testimonials have full CRUD in the admin UI.
+- Testimonials can upload avatar images from the testimonial editor. Public testimonials use the uploaded avatar when present and a local default avatar image when no avatar is attached.
 - Testimonial visibility uses an editor-facing checkbox for showing in the public Testimonials section.
 - Testimonial sorting is drag-based. Do not expose numeric sort-order inputs.
 - Dragging should show a visible drag state and live list adjustment.
@@ -79,6 +87,8 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - Uploading images happens from the Projects page.
 - Uploaded image content must match the declared safe image MIME type.
 - Private Vercel Blob reads should serve only registered image assets.
+- Private public-image reads use ETags, short browser caching, and longer Vercel CDN caching with stale-while-revalidate.
+- UUID-versioned uploads use a long Blob cache lifetime, and saved image URLs resolve through the shared compatibility helper.
 - Asset deletion must be blocked while the asset is attached to projects, testimonials, or project asset links.
 
 ## User Management Rules
@@ -99,7 +109,7 @@ Before using this summary for implementation, read `AGENTS.md` and every file in
 - Backend logs must go through the server-only shared logger and include `timestamp`, `logLevel`, and `runtime: "backend"`.
 - Logs should include useful context such as route, method, status, actor id, error code, detail, hint, and constraint.
 - Logs must not expose raw SQL params or secrets.
-- Use `revalidatePath("/")` after mutations that affect public homepage output.
+- The homepage and project detail pages use one-hour ISR. Use the shared invalidation helper after mutations that affect public output, including asset alt-text edits.
 
 ## Environment Notes
 
@@ -189,6 +199,10 @@ pnpm exec playwright test tests/e2e/admin-auth.spec.ts --project=chromium
 - Spoofed image MIME uploads are rejected.
 - Attached assets cannot be deleted before detaching from content.
 - Public back navigation from missing routes should not leave revealed content blank.
+- Project cards should still open their preview modal after navigating to a project detail page and returning with the browser back button.
+- Project cards should still open after leaving the homepage through another link, going back, then using the Projects navigation.
+- Project detail navigation closes the controlled Radix Dialog before routing on the next animation frame. Browser Back keeps its restored scroll position, and landing scroll MotionValues resynchronize without forcing a scroll.
+- Project detail navigation hands the closing Dialog off to a lightweight modal-shaped pending shell, and the detail route exposes a loading skeleton so slower transitions never show a blank intermediate state.
 - Maintainers cannot see or access admin-only Users/Settings management.
 - Login page does not show admin chrome.
 - Admin dark mode no longer causes hydration mismatch.
